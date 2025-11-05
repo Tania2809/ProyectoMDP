@@ -1,0 +1,18 @@
+{
+  "folders": [
+		{
+			"path": "../."
+		},
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/*.spec.ts": true,
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/.angular": true,
+      "**/.vscode": true
+    },
+    "explorer.compactFolders": false,
+    "explorer.sortOrder": "type"
+  }
+}
