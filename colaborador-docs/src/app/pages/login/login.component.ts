@@ -25,21 +25,18 @@ import { MatButtonModule } from '@angular/material/button';
   ]
 })
 export class LoginComponent {
-  email = '';
+  usuario = '';
   password = '';
-  errorMessage = '';
+  error = '';
 
   constructor(private authService: AuthService, private router: Router) {}
 
   onLogin() {
-    this.authService.login(this.email, this.password).subscribe({
-      next: (res) => {
-        this.authService.saveToken(res.token);
-        this.router.navigate(['/dashboard']);
-      },
-      error: (err) => {
-        this.errorMessage = err.message;
-      }
-    });
+    const ok = this.authService.login(this.usuario, this.password);
+    if (ok) {
+      this.router.navigate(['/dashboard']);
+    } else {
+      this.error = 'Usuario o contraseña incorrectos';
+    }
   }
 }

@@ -1,17 +1,29 @@
 import { Routes } from '@angular/router';
-
-
-
-import { DashboardPersonalComponent } from './pages/dashboard-personal/dashboard-personal.component';
-import { DocumentosComponent } from './pages/documentos/documentos.component';
-import { DocumentoDetalleComponent } from './pages/documento-detalle/documento-detalle.component';
-import { PerfilComponent } from './pages/perfil/perfil.component';
+import { authGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
-     { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: 'dashboard', component: DashboardPersonalComponent },
-  { path: 'documentos', component: DocumentosComponent },
-  { path: 'documentos/:id', component: DocumentoDetalleComponent },
-  { path: 'perfil', component: PerfilComponent },
-  { path: '**', redirectTo: 'dashboard' }
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: 'login', loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent) },
+  
+  // 🔒 Rutas protegidas
+  {
+    path: 'dashboard',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/dashboard-personal/dashboard-personal.component')
+      .then(m => m.DashboardPersonalComponent)
+  },
+  {
+    path: 'documentos',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/documentos/documentos.component')
+      .then(m => m.DocumentosComponent)
+  },
+  {
+    path: 'perfil',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/perfil/perfil.component')
+      .then(m => m.PerfilComponent)
+  },
+
+  { path: '**', redirectTo: 'login' }
 ];
