@@ -1,11 +1,26 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { PreferencesService } from '../../../services/factory.service';
 
 @Component({
   selector: 'app-navbar',
-  imports: [],
   templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.scss'
+  styleUrls: ['./navbar.component.scss'],
+  imports: [CommonModule, RouterModule],
+  standalone: true,
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
+theme: 'light' | 'dark' = 'light'; 
 
+  
+  constructor(private prefs: PreferencesService, private router: Router) {}
+
+ngOnInit(): void {
+  this.prefs.getTheme().subscribe(t => this.theme = t);
+}
+
+  logout() {
+    this.router.navigate(['/login']);
+  }
 }

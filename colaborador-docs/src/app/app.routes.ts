@@ -5,7 +5,7 @@ export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent) },
   
-  // 🔒 Rutas protegidas
+  //  Rutas protegidas
   {
     path: 'dashboard',
     canActivate: [authGuard],

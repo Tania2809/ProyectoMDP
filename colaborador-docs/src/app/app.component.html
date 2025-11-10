@@ -1,9 +1,7 @@
-<nav class="navbar">
-    <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-    <a routerLink="/documentos" routerLinkActive="active">Documentos</a>
-    <a routerLink="/perfil" routerLinkActive="active">Perfil</a>
-</nav>
-
-<main>
-    <router-outlet></router-outlet>
-</main>
+<app-navbar></app-navbar>
+<div class="app-container">
+    <app-sidebar></app-sidebar>
+    <main class="content">
+        <router-outlet></router-outlet>
+    </main>
+</div>

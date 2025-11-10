@@ -1,1 +1,39 @@
-<p>perfil works!</p>
+<div class="profile-container">
+    <h2>Configuración de Perfil</h2>
+
+    <!-- Tema -->
+    <div class="form-group">
+        <label>Tema:</label>
+        <select [(ngModel)]="selectedTheme" (change)="changeTheme(selectedTheme)">
+  <option value="light">Claro</option>
+  <option value="dark">Oscuro</option>
+</select>
+
+    </div>
+
+    <!-- Idioma -->
+    <div class="form-group">
+        <label>Idioma:</label>
+        <select [(ngModel)]="language" (ngModelChange)="changeLanguage($event)" name="language">
+      <option value="es">Español</option>
+      <option value="en">Inglés</option>
+    </select>
+    </div>
+
+    <!-- Notificaciones -->
+    <div class="form-group checkbox">
+        <label>
+      <input type="checkbox" [(ngModel)]="notifications" (ngModelChange)="toggleNotifications($event)" name="notifications">
+      Notificaciones activadas
+    </label>
+    </div>
+
+    <!-- Tamaño de fuente -->
+    <div class="form-group">
+        <label>Tamaño de fuente:</label>
+        <input type="number" [(ngModel)]="fontSize" (ngModelChange)="changeFontSize($event)" name="fontSize" min="10" max="24">
+    </div>
+
+    <!-- Botón para resetear preferencias -->
+    <button (click)="resetPreferences()">Restablecer valores por defecto</button>
+</div>

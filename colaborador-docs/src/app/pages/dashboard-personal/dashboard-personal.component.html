@@ -1,1 +1,29 @@
-<p>dashboard-personal works!</p>
+<div class="dashboard-container">
+
+    <!-- Formulario para agregar documento -->
+    <div class="form-add">
+        <input type="text" placeholder="Nombre del documento" #docName>
+        <select #docType>
+      <option value="PDF">PDF</option>
+      <option value="Word">Word</option>
+      <option value="Excel">Excel</option>
+    </select>
+        <button (click)="addDocumentFromInput(docName, docType)">Agregar Documento</button>
+    </div>
+
+    <!-- Tarjetas de estadísticas -->
+
+    <div class="cards">
+        <div class="card" *ngFor="let stat of stats">
+            <div class="card-title">{{ stat.title }}</div>
+            <ul>
+                <li *ngFor="let doc of stat.documents" (click)="selectDocument(doc)" [class.selected]="selectedDocument?.id === doc.id">
+                    {{ doc.name }}
+                </li>
+            </ul>
+        </div>
+    </div>
+
+
+
+</div>

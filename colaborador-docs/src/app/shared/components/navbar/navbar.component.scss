@@ -1,0 +1,33 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.8rem 1.5rem;
+    background-color: #3f51b5;
+    color: white;
+    align-items: center;
+}
+
+.navbar a {
+    color: white;
+    margin-left: 1rem;
+    text-decoration: none;
+}
+
+.navbar button {
+    background: #f44336;
+    border: none;
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.navbar.light {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.navbar.dark {
+    background-color: #3f51b5;
+    color: white;
+}
