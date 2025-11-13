@@ -1,1 +1,78 @@
-<p>documentos works!</p>
+<div class="editor-container">
+    <!-- Barra superior estilo Docs -->
+    <header class="editor-toolbar">
+        <div class="doc-info">
+            <h2>{{ document.name }}</h2>
+            <span class="doc-type">{{ document.type }}</span>
+        </div>
+
+        <div class="toolbar-actions">
+            <!-- Botones de formato funcionales -->
+            <button (click)="toggleBold()" [class.active]="isBold" title="Negrita">
+                <i class="fa-solid fa-bold"></i>
+            </button>
+            <button (click)="toggleItalic()" [class.active]="isItalic" title="Cursiva">
+                <i class="fa-solid fa-italic"></i>
+            </button>
+            <button (click)="toggleUnderline()" [class.active]="isUnderline" title="Subrayado">
+                <i class="fa-solid fa-underline"></i>
+            </button>
+
+            <!-- Alineación -->
+            <button (click)="setAlignment('left')" [class.active]="alignment === 'left'" title="Alinear a la izquierda">
+                <i class="fa-solid fa-align-left"></i>
+            </button>
+            <button (click)="setAlignment('center')" [class.active]="alignment === 'center'" title="Centrar">
+                <i class="fa-solid fa-align-center"></i>
+            </button>
+            <button (click)="setAlignment('right')" [class.active]="alignment === 'right'" title="Alinear a la derecha">
+                <i class="fa-solid fa-align-right"></i>
+            </button>
+
+            <!-- Toggles de características -->
+            <button (click)="toggleWordCount()" [class.active]="useWordCount" title="Contador de palabras">
+                <i class="fa-solid fa-list-ol"></i>
+            </button>
+            <button (click)="toggleSyntaxHighlight()" [class.active]="useSyntaxHighlight" title="Resaltado Markdown">
+                <i class="fa-solid fa-code"></i>
+            </button>
+            <button (click)="toggleTextFormat()" [class.active]="useTextFormat" title="Formato de texto">
+                <i class="fa-solid fa-text-height"></i>
+            </button>
+            <button (click)="toggleAutoSave()" [class.active]="useAutoSave" title="Guardado automático">
+                <i class="fa-solid fa-robot"></i>
+            </button>
+
+            <button (click)="saveDocument()" class="save-btn">
+                <i class="fa-solid fa-save"></i> Guardar
+            </button>
+        </div>
+    </header>
+
+    <!-- Área del editor -->
+    <main class="editor-body">
+        <!-- Textarea para edición -->
+        <div class="editor-area">
+            <textarea [(ngModel)]="content" (input)="onContentChange($event)" placeholder="Empieza a escribir aquí... Usa # para encabezados, ** para negrita, etc." [style.fontWeight]="isBold ? 'bold' : 'normal'" [style.fontStyle]="isItalic ? 'italic' : 'normal'"
+                [style.textDecoration]="isUnderline ? 'underline' : 'none'" [style.textAlign]="alignment">
+            </textarea>
+        </div>
+
+        <!-- Vista previa con decoradores aplicados -->
+        <div class="preview-area" *ngIf="useSyntaxHighlight">
+            <h4>Vista previa formateada:</h4>
+            <div class="preview-content" [innerHTML]="displayContent"></div>
+        </div>
+    </main>
+
+    <!-- Pie con información -->
+    <footer class="editor-footer">
+        <div class="footer-left">
+            <span>Características: {{ features.join(', ') }}</span>
+        </div>
+        <div class="footer-right">
+            <span>Palabras: {{ wordCount }}</span>
+            <span *ngIf="useAutoSave" class="auto-save-indicator">💾 Auto-guardado</span>
+        </div>
+    </footer>
+</div>

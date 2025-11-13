@@ -1,1 +1,20 @@
-<p>documento-detalle works!</p>
+<div class="document-detail">
+    <h2>Editar Documento</h2>
+
+    <form (ngSubmit)="saveChanges()">
+        <label for="name">Nombre:</label>
+        <input type="text" id="name" [(ngModel)]="document.name" name="name" required />
+
+        <label for="type">Tipo:</label>
+        <select [(ngModel)]="document.type" name="type" id="type">
+      <option *ngFor="let type of documentTypes" [value]="type">
+        {{ type }}
+      </option>
+    </select>
+
+        <div class="buttons">
+            <button type="submit" class="btn-save">💾 Guardar Cambios</button>
+            <button type="button" class="btn-cancel" (click)="cancel()">Cancelar</button>
+        </div>
+    </form>
+</div>
