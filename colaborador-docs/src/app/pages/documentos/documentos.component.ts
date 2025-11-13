@@ -1,34 +1,32 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { 
-  Document, 
-  DocumentService, 
-  Editor, 
-  BasicEditor, 
-  WordCountDecorator, 
-  SyntaxHighlightDecorator, 
-  AutoSaveDecorator,
-  TextFormatDecorator,
-  RenderedContent
-} from '../../services/documentos.service';
+import { Document, DocumentService, RenderedContent } from '../../services/documentos.service';
+import { MediatorService } from '../../core/mediator/mediator.service';
+import { NotificationService } from '../../core/mediator/notification.service';
+import { ChatComponent } from '../../shared/components/chat/chat.component';
+import { UserListComponent } from '../../shared/components/user-list/user-list.component';
+import { NotificationComponent } from '../../shared/components/notification/notification.component';
+import { CollaborationMediator } from '../../core/mediator/collaboration-mediator.service';
 
 @Component({
   selector: 'app-documento',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ChatComponent, UserListComponent, NotificationComponent],
   templateUrl: './documentos.component.html',
   styleUrls: ['./documentos.component.scss']
 })
 export class DocumentosComponent implements OnInit, OnDestroy {
   @Input() document!: Document;
 
+  @ViewChild('editor', { static: false }) editorRef!: ElementRef<HTMLDivElement>;
+
   content: string = '';
   displayContent: string = '';
   wordCount: number = 0;
   features: string[] = [];
   
-  // Configuración de decoradores
+  // Características disponibles
   useWordCount: boolean = true;
   useSyntaxHighlight: boolean = true;
   useAutoSave: boolean = true;
@@ -40,48 +38,49 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   isUnderline: boolean = false;
   alignment: 'left' | 'center' | 'right' = 'left';
 
-  private editor: Editor;
+  // editor field removed; logic is implemented directly in the component
+  private autoSaveTimer: any = null;
 
-  constructor(private documentService: DocumentService) {
-    this.editor = this.buildEditor();
-  }
+  constructor(
+    private documentService: DocumentService,
+    private mediator: MediatorService,
+    private notifications: NotificationService,
+    private collaboration: CollaborationMediator
+  ) {}
 
   ngOnInit() {
-    if (this.document) {
-      this.content = this.document.content || '';
-      this.updateDisplay();
+    // Ensure we always have a document to work with (prevents runtime template errors)
+    if (!this.document) {
+      const docs = this.documentService.getDocuments();
+      if (docs && docs.length) {
+        this.document = docs[0];
+      } else {
+        this.document = this.documentService.createDocument('Untitled', 'Word', '');
+      }
     }
+
+    this.content = this.document.content || '';
+    // Delay update until view is ready; small timeout is acceptable here
+    setTimeout(() => this.updateDisplay(), 0);
+
+    // Register in mediator
+    try { this.mediator.register('Editor', this); } catch (e) { /* noop */ }
   }
 
   ngOnDestroy() {
     // Limpiar intervalos si es necesario
+    try { this.mediator.unregister('Editor'); } catch (e) { /* noop */ }
   }
 
-  private buildEditor(): Editor {
-    let editor: Editor = new BasicEditor();
-
-    if (this.useWordCount) {
-      editor = new WordCountDecorator(editor);
-    }
-
-    if (this.useSyntaxHighlight) {
-      editor = new SyntaxHighlightDecorator(editor);
-    }
-
-    if (this.useAutoSave) {
-      editor = new AutoSaveDecorator(editor, (content: string) => {
-        this.autoSave(content);
-      });
-    }
-
-    if (this.useTextFormat) {
-      editor = new TextFormatDecorator(editor);
-    }
-
-    this.features = editor.getFeatures();
-    return editor;
+  // Input handler for the contenteditable editor
+  onEditorInput() {
+    if (!this.editorRef) return;
+    // Use innerText so we keep plain text for markdown processing
+    this.content = this.editorRef.nativeElement.innerText || '';
+    this.updateDisplay();
   }
 
+  // Kept for compatibility if textarea remains elsewhere
   onContentChange(event: Event) {
     const value = (event.target as HTMLTextAreaElement).value;
     this.content = value;
@@ -89,86 +88,165 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   }
 
   private updateDisplay() {
-    const rendered: RenderedContent = this.editor.render(this.content);
-    this.displayContent = rendered.formatted;
-    
-    // Actualizar contador de palabras
-    if (rendered.metadata?.wordCount !== undefined) {
-      this.wordCount = rendered.metadata.wordCount;
+    // Renderizar según opciones
+    let formatted = this.content;
+
+    if (this.useSyntaxHighlight) {
+      formatted = this.markdownToHtml(this.content);
+    } else if (this.useTextFormat) {
+      formatted = this.basicTextFormat(this.content);
     } else {
+      formatted = this.escapeHtml(this.content).replace(/\n/g, '<br>');
+    }
+
+    this.displayContent = formatted;
+
+    // Actualizar contador de palabras
+    if (this.useWordCount) {
       this.updateWordCount();
+    } else {
+      this.wordCount = 0;
+    }
+
+    // Trigger autosave
+    if (this.useAutoSave) {
+      this.scheduleAutoSave();
     }
   }
 
   private updateWordCount() {
-    const words = this.content.trim().split(/\s+/);
-    this.wordCount = this.content.trim().length > 0 ? words.length : 0;
+    const words = this.content.trim().length > 0 ? this.content.trim().split(/\s+/) : [];
+    this.wordCount = words.length;
   }
 
   private autoSave(content: string) {
     this.documentService.updateDocument(this.document.id, content);
+    // notify other components via collaboration mediator
+    try { this.collaboration.contentUpdated(this.document.id, content, this.document.name); } catch (e) { }
   }
 
   saveDocument() {
     this.documentService.updateDocument(this.document.id, this.content);
-    alert(`Documento "${this.document.name}" guardado correctamente.`);
+    try { this.collaboration.contentUpdated(this.document.id, this.content, this.document.name); } catch (e) {}
+    this.notifications.show(`Documento "${this.document.name}" guardado correctamente.`);
   }
 
   // Métodos para los botones de formato
   toggleBold() {
-    this.isBold = !this.isBold;
-    this.applyFormatting();
+    this.execCommand('bold');
   }
 
   toggleItalic() {
-    this.isItalic = !this.isItalic;
-    this.applyFormatting();
+    this.execCommand('italic');
   }
 
   toggleUnderline() {
-    this.isUnderline = !this.isUnderline;
-    this.applyFormatting();
+    this.execCommand('underline');
   }
 
   setAlignment(align: 'left' | 'center' | 'right') {
+    this.execCommand(align === 'left' ? 'justifyLeft' : align === 'center' ? 'justifyCenter' : 'justifyRight');
     this.alignment = align;
-    this.applyFormatting();
   }
 
-  private applyFormatting() {
-    // Aquí iría la lógica para aplicar formato al texto seleccionado
-    // Por ahora, solo actualizamos la visualización
-    console.log('Aplicando formato:', {
-      bold: this.isBold,
-      italic: this.isItalic,
-      underline: this.isUnderline,
-      alignment: this.alignment
-    });
+  private execCommand(command: string) {
+    // Ensure focus in editor
+    if (this.editorRef && this.editorRef.nativeElement) {
+      this.editorRef.nativeElement.focus();
+    }
+    try {
+      document.execCommand(command as any, false);
+      // Update content after formatting
+      if (this.editorRef) {
+        this.content = this.editorRef.nativeElement.innerText;
+        this.updateDisplay();
+      }
+    } catch (e) {
+      console.warn('execCommand no soportado en este entorno', e);
+    }
   }
 
   // Toggle de características
   toggleWordCount() {
     this.useWordCount = !this.useWordCount;
-    this.rebuildEditor();
+    this.updateDisplay();
   }
 
   toggleSyntaxHighlight() {
     this.useSyntaxHighlight = !this.useSyntaxHighlight;
-    this.rebuildEditor();
+    this.updateDisplay();
   }
 
   toggleTextFormat() {
     this.useTextFormat = !this.useTextFormat;
-    this.rebuildEditor();
+    this.updateDisplay();
   }
 
   toggleAutoSave() {
     this.useAutoSave = !this.useAutoSave;
-    this.rebuildEditor();
+    if (!this.useAutoSave && this.autoSaveTimer) {
+      clearTimeout(this.autoSaveTimer);
+      this.autoSaveTimer = null;
+    }
+    this.updateDisplay();
   }
 
-  private rebuildEditor() {
-    this.editor = this.buildEditor();
-    this.updateDisplay();
+  private scheduleAutoSave() {
+    if (this.autoSaveTimer) {
+      clearTimeout(this.autoSaveTimer);
+    }
+    this.autoSaveTimer = setTimeout(() => {
+      this.autoSave(this.content);
+    }, 1500);
+  }
+
+  // Handler called by MediatorService
+  onMediatorEvent(sender: string, event: string, data?: any) {
+    if (event === 'messageSent') {
+      // show a small notification
+      this.notifications.show(`Mensaje de ${data?.user}: ${data?.message}`);
+    }
+    if (event === 'notification') {
+      this.notifications.show(data?.text || 'Notificación');
+    }
+  }
+
+  // Simple markdown -> HTML renderer (subset)
+  private markdownToHtml(md: string): string {
+    if (!md) return '';
+    let formatted = this.escapeHtml(md);
+
+    // Headers
+    formatted = formatted.replace(/^### (.*$)/gim, '<h3 class="md-header">$1</h3>');
+    formatted = formatted.replace(/^## (.*$)/gim, '<h2 class="md-header">$1</h2>');
+    formatted = formatted.replace(/^# (.*$)/gim, '<h1 class="md-header">$1</h1>');
+
+    // Horizontal rules
+    formatted = formatted.replace(/^---$/gim, '<hr class="md-hr">');
+
+    // Bold
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong class="md-bold">$1</strong>');
+
+    // Inline code
+    formatted = formatted.replace(/`(.*?)`/g, '<code class="md-inline-code">$1</code>');
+
+    // Paragraphs
+    formatted = formatted.split('\n').map(line => {
+      if (!line.trim() || line.startsWith('<h1') || line.startsWith('<h2') || line.startsWith('<h3') || line.startsWith('<hr') || line.startsWith('<ul') || line.startsWith('<li')) {
+        return line;
+      }
+      return `<p class="md-paragraph">${line}</p>`;
+    }).join('\n');
+
+    return formatted;
+  }
+
+  private basicTextFormat(text: string): string {
+    if (!text) return '';
+    return this.escapeHtml(text).split('\n').map(line => line.trim() ? `<p>${line}</p>` : '').join('\n');
+  }
+
+  private escapeHtml(raw: string): string {
+    return raw.replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"} as any)[c]);
   }
 }

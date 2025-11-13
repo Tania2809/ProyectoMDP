@@ -1,5 +1,5 @@
 <div class="editor-container">
-    <!-- Barra superior estilo Docs -->
+    <app-notifications></app-notifications>
     <header class="editor-toolbar">
         <div class="doc-info">
             <h2>{{ document.name }}</h2>
@@ -7,29 +7,30 @@
         </div>
 
         <div class="toolbar-actions">
-            <!-- Botones de formato funcionales -->
-            <button (click)="toggleBold()" [class.active]="isBold" title="Negrita">
+            <button (click)="toggleBold()" title="Negrita">
                 <i class="fa-solid fa-bold"></i>
             </button>
-            <button (click)="toggleItalic()" [class.active]="isItalic" title="Cursiva">
+            <button (click)="toggleItalic()" title="Cursiva">
                 <i class="fa-solid fa-italic"></i>
             </button>
-            <button (click)="toggleUnderline()" [class.active]="isUnderline" title="Subrayado">
+            <button (click)="toggleUnderline()" title="Subrayado">
                 <i class="fa-solid fa-underline"></i>
             </button>
 
-            <!-- Alineación -->
-            <button (click)="setAlignment('left')" [class.active]="alignment === 'left'" title="Alinear a la izquierda">
+            <div class="divider"></div>
+
+            <button (click)="setAlignment('left')" [class.active]="alignment === 'left'">
                 <i class="fa-solid fa-align-left"></i>
             </button>
-            <button (click)="setAlignment('center')" [class.active]="alignment === 'center'" title="Centrar">
+            <button (click)="setAlignment('center')" [class.active]="alignment === 'center'">
                 <i class="fa-solid fa-align-center"></i>
             </button>
-            <button (click)="setAlignment('right')" [class.active]="alignment === 'right'" title="Alinear a la derecha">
+            <button (click)="setAlignment('right')" [class.active]="alignment === 'right'">
                 <i class="fa-solid fa-align-right"></i>
             </button>
 
-            <!-- Toggles de características -->
+            <div class="divider"></div>
+
             <button (click)="toggleWordCount()" [class.active]="useWordCount" title="Contador de palabras">
                 <i class="fa-solid fa-list-ol"></i>
             </button>
@@ -44,35 +45,44 @@
             </button>
 
             <button (click)="saveDocument()" class="save-btn">
-                <i class="fa-solid fa-save"></i> Guardar
+                <i class="fa-solid fa-save"></i>
             </button>
         </div>
     </header>
 
-    <!-- Área del editor -->
     <main class="editor-body">
-        <!-- Textarea para edición -->
         <div class="editor-area">
-            <textarea [(ngModel)]="content" (input)="onContentChange($event)" placeholder="Empieza a escribir aquí... Usa # para encabezados, ** para negrita, etc." [style.fontWeight]="isBold ? 'bold' : 'normal'" [style.fontStyle]="isItalic ? 'italic' : 'normal'"
-                [style.textDecoration]="isUnderline ? 'underline' : 'none'" [style.textAlign]="alignment">
-            </textarea>
+            <div #editor class="editable" contenteditable="true" (input)="onEditorInput()" [attr.placeholder]="'Empieza a escribir aquí... Usa # para encabezados, ** para negrita, etc.'">
+                <!-- initial content -->
+                <div [innerText]="content"></div>
+            </div>
         </div>
 
-        <!-- Vista previa con decoradores aplicados -->
-        <div class="preview-area" *ngIf="useSyntaxHighlight">
-            <h4>Vista previa formateada:</h4>
+        <aside class="preview-area" *ngIf="useSyntaxHighlight">
+            <h4>Vista previa</h4>
             <div class="preview-content" [innerHTML]="displayContent"></div>
-        </div>
+
+            <!-- Lista de usuarios y chat integrados -->
+            <section class="embedded-presence">
+                <app-user-list></app-user-list>
+                <div class="spacer-8" aria-hidden="true"></div>
+                <app-chat></app-chat>
+            </section>
+        </aside>
     </main>
 
-    <!-- Pie con información -->
     <footer class="editor-footer">
         <div class="footer-left">
-            <span>Características: {{ features.join(', ') }}</span>
+            <span>Características: 
+                <span *ngIf="useWordCount">Contador</span>
+            <span *ngIf="useSyntaxHighlight">, Markdown</span>
+            <span *ngIf="useTextFormat">, Formato</span>
+            <span *ngIf="useAutoSave">, Auto-guardado</span>
+            </span>
         </div>
         <div class="footer-right">
             <span>Palabras: {{ wordCount }}</span>
-            <span *ngIf="useAutoSave" class="auto-save-indicator">💾 Auto-guardado</span>
+            <span *ngIf="useAutoSave" class="auto-save-indicator">💾</span>
         </div>
     </footer>
 </div>

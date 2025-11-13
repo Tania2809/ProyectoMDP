@@ -52,3 +52,40 @@ button {
 button:hover {
     background-color: #5c6bc0;
 }
+
+.preview-box {
+    margin-top: 1rem;
+    padding: 0.85rem;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid #e6e6e6;
+}
+
+.preview-box.dark {
+    background: #1f2937;
+    color: #f3f4f6;
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.preview-header {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.preview-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(0, 0, 0, 0.06)
+}
+
+.preview-name {
+    font-weight: 600
+}
+
+.preview-sub {
+    font-size: 0.85rem;
+    color: #6b7280
+}
