@@ -52,17 +52,12 @@
 
     <main class="editor-body">
         <div class="editor-area">
-            <div #editor class="editable" contenteditable="true" (input)="onEditorInput()" [attr.placeholder]="'Empieza a escribir aquí... Usa # para encabezados, ** para negrita, etc.'">
-                <!-- initial content -->
-                <div [innerText]="content"></div>
+            <div #editor class="editable" contenteditable="true" (input)="onEditorInput()" [innerText]="content" dir="ltr" spellcheck="true" [attr.placeholder]="'Empieza a escribir aquí... Usa # para encabezados, ** para negrita, etc.'">
             </div>
         </div>
 
-        <aside class="preview-area" *ngIf="useSyntaxHighlight">
-            <h4>Vista previa</h4>
-            <div class="preview-content" [innerHTML]="displayContent"></div>
-
-            <!-- Lista de usuarios y chat integrados -->
+        <!-- Mantener presencia integrada (usuarios + chat) pero quitar la vista previa del contenido -->
+        <aside class="preview-area">
             <section class="embedded-presence">
                 <app-user-list></app-user-list>
                 <div class="spacer-8" aria-hidden="true"></div>

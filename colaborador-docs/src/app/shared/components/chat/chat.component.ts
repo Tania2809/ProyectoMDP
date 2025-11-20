@@ -153,6 +153,8 @@ interface Message {
       border-radius: 4px;
       font-size: 12px;
       font-style: italic;
+      direction: ltr;
+      text-align: left;
     }
 
     .message-header {
@@ -179,6 +181,7 @@ interface Message {
     .message-content {
       word-break: break-word;
       line-height: 1.4;
+      direction: ltr;
     }
 
     .chat-input-section {
@@ -312,6 +315,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   private messageId = 0;
   private subscriptions: Subscription[] = [];
   private shouldScroll = true;
+  // Track last content update per document to avoid flooding system messages
+  private lastContentUpdate: Record<number, { ts: number; messageId?: number }> = {};
 
   constructor(
     private mediator: MediatorService,
@@ -387,18 +392,37 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.shouldScroll = true;
     }
     if (event === 'contentUpdated') {
-      this.addSystemMessage(`Contenido actualizado por ${sender}`);
+      // data expected: { id: docId, content, author }
+      const docId = data?.id || 0;
+      const now = Date.now();
+      const last = this.lastContentUpdate[docId];
+      const text = data?.author ? `Contenido actualizado por ${data.author}` : `Contenido actualizado`;
+
+      // If recent update for same doc exists (within 8s), update that system message instead of pushing a new one
+      if (last && (now - last.ts) < 8000 && last.messageId) {
+        const idx = this.messages.findIndex(m => m.id === last.messageId);
+        if (idx > -1) {
+          this.messages[idx].message = `${text} · ${new Date().toLocaleTimeString()}`;
+          this.messages[idx].timestamp = new Date();
+        } else {
+          // fallback: push a new system message
+          const id = ++this.messageId;
+          this.messages.push({ id, user: 'Sistema', message: `${text} · ${new Date().toLocaleTimeString()}`, timestamp: new Date(), isSystem: true });
+          this.lastContentUpdate[docId] = { ts: now, messageId: id };
+        }
+      } else {
+        const id = ++this.messageId;
+        this.messages.push({ id, user: 'Sistema', message: `${text} · ${new Date().toLocaleTimeString()}`, timestamp: new Date(), isSystem: true });
+        this.lastContentUpdate[docId] = { ts: now, messageId: id };
+      }
+
+      this.shouldScroll = true;
     }
   }
 
   private addSystemMessage(text: string) {
-    this.messages.push({
-      id: ++this.messageId,
-      user: 'Sistema',
-      message: text,
-      timestamp: new Date(),
-      isSystem: true
-    });
+    const id = ++this.messageId;
+    this.messages.push({ id, user: 'Sistema', message: text, timestamp: new Date(), isSystem: true });
     this.shouldScroll = true;
   }
 

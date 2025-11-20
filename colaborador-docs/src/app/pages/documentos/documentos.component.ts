@@ -8,6 +8,8 @@ import { ChatComponent } from '../../shared/components/chat/chat.component';
 import { UserListComponent } from '../../shared/components/user-list/user-list.component';
 import { NotificationComponent } from '../../shared/components/notification/notification.component';
 import { CollaborationMediator } from '../../core/mediator/collaboration-mediator.service';
+import { UserSessionManager } from '../../core/mediator/user-session.manager';
+import { User } from '../../models/usuario.model';
 
 @Component({
   selector: 'app-documento',
@@ -41,11 +43,20 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   // editor field removed; logic is implemented directly in the component
   private autoSaveTimer: any = null;
 
+  // Editing indicator state
+  editingBy?: { name: string; color: string; expiresAt: number };
+  private editingTimer: any = null;
+  private usersSub: any = null;
+  private eventsSub: any = null;
+  private currentUser?: User;
+  private lastTypingSent = 0;
+
   constructor(
     private documentService: DocumentService,
     private mediator: MediatorService,
     private notifications: NotificationService,
-    private collaboration: CollaborationMediator
+    private collaboration: CollaborationMediator,
+    private sessions: UserSessionManager
   ) {}
 
   ngOnInit() {
@@ -65,11 +76,31 @@ export class DocumentosComponent implements OnInit, OnDestroy {
 
     // Register in mediator
     try { this.mediator.register('Editor', this); } catch (e) { /* noop */ }
+
+    // Subscribe to session users and events to track typing from others
+    this.usersSub = this.sessions.users$().subscribe(users => {
+      // pick a default current user for this client (first user in list) if not set
+      if (!this.currentUser && users && users.length) {
+        this.currentUser = users[0];
+      }
+    });
+
+    this.eventsSub = this.sessions.events$().subscribe(ev => {
+      if (!ev) return;
+      if (ev.type === 'typing') {
+        // ignore if it's from current user
+        if (this.currentUser && ev.user && ev.user.id === this.currentUser.id) return;
+        this.showEditingIndicator(ev.user.name, this.pickColor(ev.user.id));
+      }
+    });
   }
 
   ngOnDestroy() {
     // Limpiar intervalos si es necesario
     try { this.mediator.unregister('Editor'); } catch (e) { /* noop */ }
+    this.usersSub?.unsubscribe?.();
+    this.eventsSub?.unsubscribe?.();
+    if (this.editingTimer) clearTimeout(this.editingTimer);
   }
 
   // Input handler for the contenteditable editor
@@ -78,6 +109,13 @@ export class DocumentosComponent implements OnInit, OnDestroy {
     // Use innerText so we keep plain text for markdown processing
     this.content = this.editorRef.nativeElement.innerText || '';
     this.updateDisplay();
+
+    // Notify that current user is typing (throttled)
+    const now = Date.now();
+    if (this.currentUser && (now - this.lastTypingSent) > 1500) {
+      try { this.sessions.notifyTyping(this.currentUser.id); } catch (e) { }
+      this.lastTypingSent = now;
+    }
   }
 
   // Kept for compatibility if textarea remains elsewhere
@@ -209,6 +247,15 @@ export class DocumentosComponent implements OnInit, OnDestroy {
     if (event === 'notification') {
       this.notifications.show(data?.text || 'Notificación');
     }
+
+    // Optionally react to contentUpdated coming from mediator (may be used in other clients)
+    if (event === 'contentUpdated') {
+      // if someone else updated content, show a brief editing indicator
+      const author = data?.author || data?.authorName || 'Alguien';
+      // ignore if event seems to be originated by this client (best-effort)
+      if (this.currentUser && author === this.currentUser.name) return;
+      this.showEditingIndicator(author, this.pickColor(author.length));
+    }
   }
 
   // Simple markdown -> HTML renderer (subset)
@@ -248,5 +295,25 @@ export class DocumentosComponent implements OnInit, OnDestroy {
 
   private escapeHtml(raw: string): string {
     return raw.replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"} as any)[c]);
+  }
+
+  // Show a small editing indicator when another user is editing
+  private showEditingIndicator(name: string, color: string, duration = 3000) {
+    this.editingBy = { name, color, expiresAt: Date.now() + duration };
+    if (this.editingTimer) clearTimeout(this.editingTimer);
+    this.editingTimer = setTimeout(() => {
+      this.editingBy = undefined;
+      this.editingTimer = null;
+    }, duration);
+  }
+
+  // Simple deterministic color picker based on a seed
+  private pickColor(seed: number | string): string {
+    const palette = ['#ef4444','#f97316','#f59e0b','#10b981','#06b6d4','#3b82f6','#8b5cf6','#ec4899'];
+    let s = 0;
+    const str = typeof seed === 'number' ? String(seed) : String(seed || '');
+    for (let i = 0; i < str.length; i++) s = (s << 5) - s + str.charCodeAt(i);
+    s = Math.abs(s);
+    return palette[s % palette.length];
   }
 }

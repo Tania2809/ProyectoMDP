@@ -16,7 +16,7 @@ interface Toast {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="toasts-container" aria-live="polite" role="status">
+    <div class="toasts-container" aria-live="polite" role="status" dir="ltr">
       <div *ngFor="let t of toasts" 
            [ngClass]="getToastClasses(t.type)"
            [attr.data-id]="t.id">
@@ -72,6 +72,8 @@ interface Toast {
       color: inherit;
       line-height: 1.4;
     }
+
+    .toast, .toast-text { direction: ltr; }
 
     .toast-close {
       background: none;
@@ -163,6 +165,8 @@ export class NotificationComponent implements OnInit, OnDestroy {
   private idCounter = 1;
   private autoDismissTimer: Map<number, any> = new Map();
   private readonly AUTO_DISMISS_MS = 5000; // 5 seconds
+  // avoid spamming typing notifications
+  private typingLastShown: Record<string, number> = {};
 
   constructor(
     private mediator: MediatorService,
@@ -192,8 +196,13 @@ export class NotificationComponent implements OnInit, OnDestroy {
         }
       }
       if (ev.type === 'typing') {
-        // Show brief typing indicator notification
-        this.showNotification(`${ev.user.name} está escribiendo...`, 'info');
+        // Throttle typing notifications per user (4s)
+        const now = Date.now();
+        const last = this.typingLastShown[ev.user.name] || 0;
+        if (now - last > 4000) {
+          this.typingLastShown[ev.user.name] = now;
+          this.showNotification(`${ev.user.name} está escribiendo...`, 'info');
+        }
       }
     });
   }
