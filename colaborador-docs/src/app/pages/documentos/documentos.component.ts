@@ -54,7 +54,6 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   private eventsSub: any = null;
   private currentUser?: User;
   private lastTypingSent = 0;
-  showPreviewPanel: boolean = false;
   // Modal state para mostrar detalle en overlay
   modalOpen: boolean = false;
   modalDocument?: Document;
@@ -184,12 +183,6 @@ export class DocumentosComponent implements OnInit, OnDestroy {
     });
   }
 
-  togglePreview() {
-    this.showPreviewPanel = !this.showPreviewPanel;
-    if (this.showPreviewPanel) {
-      this.updateDisplay();
-    }
-  }
 
   openDetailView() {
     if (this.document && (this.document as any).id) {

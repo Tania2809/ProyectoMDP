@@ -38,9 +38,6 @@
             <button (click)="toggleSyntaxHighlight()" [class.active]="useSyntaxHighlight" title="Resaltado Markdown">
                 <i class="fa-solid fa-code"></i>
             </button>
-            <button (click)="togglePreview()" [class.active]="showPreviewPanel" title="Mostrar vista previa">
-                <i class="fa-solid fa-eye"></i>
-            </button>
             <button (click)="openDetailView()" title="Abrir detalle">
                 <i class="fa-solid fa-external-link-alt"></i>
             </button>
@@ -63,16 +60,12 @@
             </div>
         </div>
 
-        <!-- Mantener presencia integrada (usuarios + chat) pero quitar la vista previa del contenido -->
+        <!-- Presencia integrada (usuarios + chat) -->
         <aside class="preview-area">
-            <section class="embedded-presence" *ngIf="!showPreviewPanel">
+            <section class="embedded-presence">
                 <app-user-list></app-user-list>
                 <div class="spacer-8" aria-hidden="true"></div>
                 <app-chat></app-chat>
-            </section>
-            <section class="preview-panel" *ngIf="showPreviewPanel">
-                <h3>Previsualización</h3>
-                <div class="preview-content" [innerHTML]="displayContent"></div>
             </section>
         </aside>
     </main>

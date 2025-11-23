@@ -1,0 +1,38 @@
+<div class="dashboard-container">
+    <!-- 1. Panel Lateral Izquierdo (Menú) -->
+    <aside class="sidebar">
+        <h3>Menú Principal</h3>
+        <ul>
+            <li class="active">
+                <i class="icon-docs"></i>
+                <span>Mis Documentos</span>
+            </li>
+            <li>
+                <i class="icon-shared"></i>
+                <span>Compartidos</span>
+            </li>
+            <li>
+                <i class="icon-settings"></i>
+                <span>Configuración</span>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- 2. Contenido Principal (Centro) -->
+    <main class="main-content">
+        <h1>Mis Documentos</h1>
+
+        <!-- Aquí iría el contenido como la lista de documentos, el editor, etc. -->
+        <div class="document-list">
+            <div class="document-item selected">Especificaciones del Proyecto</div>
+            <div class="document-item">Guía de Estilos</div>
+            <div class="document-item">Manual de Usuario</div>
+        </div>
+
+    </main>
+
+    <!-- 3. Panel Derecho (Colaboradores) - ¡AQUÍ LO AÑADIMOS! -->
+    <aside class="collaborators-panel">
+        <app-user-list></app-user-list>
+    </aside>
+</div>
