@@ -1,3 +1,4 @@
+<!-- Patrón: Mediator — esta vista coordina editor, chat y notificaciones vía Mediator y Observer. -->
 <div class="editor-container">
     <app-notifications></app-notifications>
     <header class="editor-toolbar">
@@ -37,6 +38,12 @@
             <button (click)="toggleSyntaxHighlight()" [class.active]="useSyntaxHighlight" title="Resaltado Markdown">
                 <i class="fa-solid fa-code"></i>
             </button>
+            <button (click)="togglePreview()" [class.active]="showPreviewPanel" title="Mostrar vista previa">
+                <i class="fa-solid fa-eye"></i>
+            </button>
+            <button (click)="openDetailView()" title="Abrir detalle">
+                <i class="fa-solid fa-external-link-alt"></i>
+            </button>
             <button (click)="toggleTextFormat()" [class.active]="useTextFormat" title="Formato de texto">
                 <i class="fa-solid fa-text-height"></i>
             </button>
@@ -58,10 +65,14 @@
 
         <!-- Mantener presencia integrada (usuarios + chat) pero quitar la vista previa del contenido -->
         <aside class="preview-area">
-            <section class="embedded-presence">
+            <section class="embedded-presence" *ngIf="!showPreviewPanel">
                 <app-user-list></app-user-list>
                 <div class="spacer-8" aria-hidden="true"></div>
                 <app-chat></app-chat>
+            </section>
+            <section class="preview-panel" *ngIf="showPreviewPanel">
+                <h3>Previsualización</h3>
+                <div class="preview-content" [innerHTML]="displayContent"></div>
             </section>
         </aside>
     </main>
@@ -80,4 +91,12 @@
             <span *ngIf="useAutoSave" class="auto-save-indicator">💾</span>
         </div>
     </footer>
+</div>
+
+<!-- Modal overlay para mostrar detalle de documento sin navegar -->
+<div class="modal-overlay" *ngIf="modalOpen" (click)="closeModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <button class="modal-close" (click)="closeModal()" aria-label="Cerrar">×</button>
+        <app-document-detail [documentInput]="modalDocument" (closed)="closeModal()" (saved)="onModalSaved($event)"></app-document-detail>
+    </div>
 </div>

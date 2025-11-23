@@ -101,6 +101,17 @@
                 flex: 1;
             }
             
+            .preview-panel {
+                padding: 0.5rem;
+            }
+            
+            .preview-content {
+                background: #fafafa;
+                border: 1px solid #eee;
+                padding: 0.75rem;
+                border-radius: 6px;
+            }
+            
             .editor-area {
                 flex: 1;
                 display: flex;
@@ -548,5 +559,49 @@
                         gap: 0.5rem;
                         text-align: center;
                     }
+                }
+            }
+            /* Modal overlay para mostrar detalle sin navegar */
+            
+            .modal-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.45);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 2000;
+                padding: 20px;
+            }
+            
+            .modal-container {
+                background: #fff;
+                border-radius: 10px;
+                max-width: 980px;
+                width: 100%;
+                max-height: 90vh;
+                overflow: auto;
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+                position: relative;
+                padding: 18px;
+            }
+            
+            .modal-close {
+                position: absolute;
+                top: 10px;
+                right: 12px;
+                background: transparent;
+                border: none;
+                font-size: 22px;
+                cursor: pointer;
+            }
+            
+            @media (max-width: 640px) {
+                .modal-container {
+                    padding: 12px;
+                }
+                .modal-close {
+                    top: 6px;
+                    right: 8px;
                 }
             }

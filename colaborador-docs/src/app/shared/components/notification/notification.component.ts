@@ -16,6 +16,7 @@ interface Toast {
   standalone: true,
   imports: [CommonModule],
   template: `
+    <!-- Patrón: Observer/Mediator — componente suscrito a UserSessionManager y registrado en Mediator para recibir eventos. -->
     <div class="toasts-container" aria-live="polite" role="status" dir="ltr">
       <div *ngFor="let t of toasts" 
            [ngClass]="getToastClasses(t.type)"

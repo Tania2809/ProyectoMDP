@@ -1,20 +1,24 @@
+// Patrón: Mediator (vista principal) — Usa Mediator para coordinar eventos entre editor, chat y notificaciones; también integra Observer (UserSessionManager) y Facade (DocumentFacade).
 import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Document, DocumentService, RenderedContent } from '../../services/documentos.service';
+import { Document, RenderedContent } from '../../services/documentos.service';
 import { MediatorService } from '../../core/mediator/mediator.service';
 import { NotificationService } from '../../core/mediator/notification.service';
 import { ChatComponent } from '../../shared/components/chat/chat.component';
 import { UserListComponent } from '../../shared/components/user-list/user-list.component';
 import { NotificationComponent } from '../../shared/components/notification/notification.component';
+import { DocumentoDetalleComponent } from '../documento-detalle/documento-detalle.component';
 import { CollaborationMediator } from '../../core/mediator/collaboration-mediator.service';
+import { DocumentFacade } from '../../services/document-facade.service';
 import { UserSessionManager } from '../../core/mediator/user-session.manager';
 import { User } from '../../models/usuario.model';
 
 @Component({
   selector: 'app-documento',
   standalone: true,
-  imports: [CommonModule, FormsModule, ChatComponent, UserListComponent, NotificationComponent],
+  imports: [CommonModule, FormsModule, ChatComponent, UserListComponent, NotificationComponent, DocumentoDetalleComponent],
   templateUrl: './documentos.component.html',
   styleUrls: ['./documentos.component.scss']
 })
@@ -50,24 +54,32 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   private eventsSub: any = null;
   private currentUser?: User;
   private lastTypingSent = 0;
+  showPreviewPanel: boolean = false;
+  // Modal state para mostrar detalle en overlay
+  modalOpen: boolean = false;
+  modalDocument?: Document;
 
   constructor(
-    private documentService: DocumentService,
     private mediator: MediatorService,
     private notifications: NotificationService,
     private collaboration: CollaborationMediator,
-    private sessions: UserSessionManager
+    private sessions: UserSessionManager,
+    private facade: DocumentFacade,
+    private router: Router
   ) {}
 
   ngOnInit() {
     // Ensure we always have a document to work with (prevents runtime template errors)
     if (!this.document) {
-      const docs = this.documentService.getDocuments();
-      if (docs && docs.length) {
-        this.document = docs[0];
-      } else {
-        this.document = this.documentService.createDocument('Untitled', 'Word', '');
-      }
+      this.facade.getAllDocuments().subscribe(docs => {
+        if (docs && docs.length) {
+          this.document = docs[0];
+        } else {
+          this.facade.saveDocument({ name: 'Untitled', type: 'Word', content: '' } as Document).subscribe(d => {
+            if (d) this.document = d as Document;
+          });
+        }
+      });
     }
 
     this.content = this.document.content || '';
@@ -158,15 +170,48 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   }
 
   private autoSave(content: string) {
-    this.documentService.updateDocument(this.document.id, content);
-    // notify other components via collaboration mediator
-    try { this.collaboration.contentUpdated(this.document.id, content, this.document.name); } catch (e) { }
+    this.document.content = content;
+    this.facade.saveDocument(this.document).subscribe(() => {
+      try { this.collaboration.contentUpdated(this.document.id, content, this.document.name); } catch (e) { }
+    });
   }
 
   saveDocument() {
-    this.documentService.updateDocument(this.document.id, this.content);
+    this.document.content = this.content;
+    this.facade.saveDocument(this.document).subscribe(() => {
+      try { this.collaboration.contentUpdated(this.document.id, this.content, this.document.name); } catch (e) {}
+      this.notifications.show(`Documento "${this.document.name}" guardado correctamente.`);
+    });
+  }
+
+  togglePreview() {
+    this.showPreviewPanel = !this.showPreviewPanel;
+    if (this.showPreviewPanel) {
+      this.updateDisplay();
+    }
+  }
+
+  openDetailView() {
+    if (this.document && (this.document as any).id) {
+      // Abrir modal en lugar de navegar
+      this.modalDocument = this.document;
+      this.modalOpen = true;
+    }
+  }
+
+  closeModal() {
+    this.modalOpen = false;
+    this.modalDocument = undefined;
+  }
+
+  onModalSaved(saved: Document) {
+    // Actualizar el documento local y la vista
+    this.document = saved;
+    this.content = saved.content || '';
+    this.updateDisplay();
     try { this.collaboration.contentUpdated(this.document.id, this.content, this.document.name); } catch (e) {}
     this.notifications.show(`Documento "${this.document.name}" guardado correctamente.`);
+    this.closeModal();
   }
 
   // Métodos para los botones de formato

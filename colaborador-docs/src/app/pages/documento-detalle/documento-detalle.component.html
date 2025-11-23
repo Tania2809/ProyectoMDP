@@ -1,3 +1,4 @@
+<!-- Patrón: Decorator (renderizado) — esta vista usa Renderer + SyntaxHighlighterDecorator para la vista previa. -->
 <div class="document-detail">
     <h2>Editar Documento</h2>
 
@@ -17,4 +18,9 @@
             <button type="button" class="btn-cancel" (click)="cancel()">Cancelar</button>
         </div>
     </form>
+
+    <section class="preview-section" *ngIf="document">
+        <h3>Vista previa</h3>
+        <div class="preview" [innerHTML]="safeHtml"></div>
+    </section>
 </div>

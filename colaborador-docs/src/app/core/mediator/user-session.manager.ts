@@ -1,3 +1,4 @@
+// Patrón: Observer — Expone streams (Observables) para suscripción a eventos y cambios de sesión.
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject, Observable } from 'rxjs';
 import { User } from '../../models/usuario.model';

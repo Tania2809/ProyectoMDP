@@ -1,3 +1,4 @@
+// Patrón: Mediator — Servicio central de mensajería entre componentes (registrado como singleton vía DI).
 import { Injectable } from '@angular/core';
 
 export type MediatorEvent = 'messageSent' | 'contentUpdated' | 'userJoined' | 'userLeft' | 'notification';

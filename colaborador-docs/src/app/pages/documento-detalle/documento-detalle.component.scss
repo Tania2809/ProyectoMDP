@@ -43,3 +43,28 @@
         cursor: pointer;
     }
 }
+
+.preview {
+    margin-top: 1.25rem;
+    padding: 1rem;
+    background: #fafafa;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.preview code.hl {
+    background: #0f172a;
+    color: #d1fae5;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace;
+    font-size: 0.95em;
+}
+
+.preview pre {
+    background: #0b1220;
+    color: #e6f7ff;
+    padding: 0.75rem;
+    border-radius: 6px;
+    overflow: auto;
+}

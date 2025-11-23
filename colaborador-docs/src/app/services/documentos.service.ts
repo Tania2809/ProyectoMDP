@@ -1,3 +1,4 @@
+// Patrón: Factory (Factory Method) — Crea y registra documentos via createDocument().
 import { Injectable } from '@angular/core';
 
 export type DocumentType = 'PDF' | 'Word' | 'Excel';

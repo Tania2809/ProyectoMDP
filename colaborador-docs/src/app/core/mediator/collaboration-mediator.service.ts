@@ -1,3 +1,4 @@
+// Patrón: Facade — Provee operaciones de colaboración simplificadas sobre el mediador y sesiones.
 import { Injectable } from '@angular/core';
 import { MediatorService } from './mediator.service';
 import { UserSessionManager } from './user-session.manager';
