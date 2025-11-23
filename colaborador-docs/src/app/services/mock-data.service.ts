@@ -11,7 +11,7 @@ export interface Document {
   content: string;
   author: string;
   createdAt: Date;
-  updatedAt: Date;
+  updatedAt: Date; 
   sharedWith: string[];
 }
 

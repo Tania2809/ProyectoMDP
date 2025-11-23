@@ -2,6 +2,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { Observable, of, catchError, map } from 'rxjs';
 import { Document } from './documentos.service';
 import { CollaborationMediator } from '../core/mediator/collaboration-mediator.service';
 import { DocumentApiService } from './document-api.service';
