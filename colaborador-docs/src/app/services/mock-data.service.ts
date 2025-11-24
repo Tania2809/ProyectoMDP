@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http'; // Importar HttpClient
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators'; // map sigue siendo útil
 import { User, createUser } from '../models/usuario.model';
 
 // La interfaz Document ahora debe coincidir con el modelo del backend
@@ -9,6 +8,7 @@ export interface Document {
   _id: string; // MongoDB usa _id como string
   title: string;
   content: string;
+  type: string; // Añadimos el tipo
   author: string;
   createdAt: Date;
   updatedAt: Date; 
@@ -36,26 +36,36 @@ export class MockDataService {
    * Obtiene todos los documentos desde la API
    */
   getDocuments(): Observable<Document[]> {
-    return this.http.get<Document[]>(`${this.apiUrl}/documents`).pipe(
-      // Mapeamos la respuesta para que coincida con la interfaz esperada por los componentes
-      map(docs => docs.map(doc => ({
-        ...doc,
-        // El backend nos da authorId como un objeto, extraemos el nombre
-        author: (doc.author as any)?.name || 'Desconocido',
-        id: doc._id // Renombramos _id a id si los componentes lo esperan así
-      } as any)))
-    );
+    return this.http.get<Document[]>(`${this.apiUrl}/documents`);
   }
 
   /**
    * Crea un nuevo documento llamando a la API
    */
-  createDocument(title: string, content: string, author: string): Observable<Document> {
-    const newDoc = { title, content, author }; // El backend se encargará del resto
+  createDocument(title: string, content: string, author: string, type: string): Observable<Document> {
+    const newDoc = { title, content, author, type }; // Incluimos el tipo en el cuerpo de la petición
     return this.http.post<Document>(`${this.apiUrl}/documents`, newDoc);
   }
 
-  // NOTA: Los métodos como updateUserStatus, updateDocument, deleteDocument, etc.,
-  // necesitarían sus propias rutas en el backend (p. ej. PUT /api/users/:id)
-  // y sus correspondientes llamadas http.put(), http.delete(), etc., aquí.
+  /**
+   * Obtiene un documento por su ID
+   */
+  getDocumentById(id: string): Observable<Document> {
+    return this.http.get<Document>(`${this.apiUrl}/documents/${id}`);
+  }
+
+  /**
+   * Actualiza un documento existente (título y contenido)
+   */
+  updateDocument(id: string, title: string, content: string): Observable<Document> {
+    return this.http.put<Document>(`${this.apiUrl}/documents/${id}`, { title, content });
+  }
+
+  /**
+   * Elimina un documento por su ID
+   */
+  deleteDocument(id: string): Observable<any> {
+    // La respuesta en caso de éxito no tiene un cuerpo, por eso usamos 'any'
+    return this.http.delete(`${this.apiUrl}/documents/${id}`);
+  }
 }

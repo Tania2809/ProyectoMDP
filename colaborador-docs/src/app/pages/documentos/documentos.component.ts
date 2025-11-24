@@ -68,22 +68,22 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    // Ensure we always have a document to work with (prevents runtime template errors)
     if (!this.document) {
       this.facade.getAllDocuments().subscribe(docs => {
+        // Si se obtienen documentos, inicializa con el primero.
         if (docs && docs.length) {
-          this.document = docs[0];
-        } else {
-          this.facade.saveDocument({ name: 'Untitled', type: 'Word', content: '' } as Document).subscribe(d => {
-            if (d) this.document = d as Document;
-          });
+          this.initializeDocument(docs[0]);
         }
-      });
+      },
+      error => {
+        // Si la API falla (p. ej. 404), crea un documento local temporal para que la UI funcione.
+        console.error('Error al obtener documentos. Usando un documento local temporal.', error);
+        this.initializeDocument({ name: 'Documento Offline', type: 'Word', content: 'No se pudo conectar con el servidor.' } as Document);
+      }
+    );
+    } else {
+      this.initializeDocument(this.document);
     }
-
-    this.content = this.document.content || '';
-    // Delay update until view is ready; small timeout is acceptable here
-    setTimeout(() => this.updateDisplay(), 0);
 
     // Register in mediator
     try { this.mediator.register('Editor', this); } catch (e) { /* noop */ }
@@ -106,6 +106,13 @@ export class DocumentosComponent implements OnInit, OnDestroy {
     });
   }
 
+  private initializeDocument(doc: Document) {
+    this.document = doc;
+    this.content = this.document.content || '';
+    // Delay update until view is ready; small timeout is acceptable here
+    setTimeout(() => this.updateDisplay(), 0);
+  }
+
   ngOnDestroy() {
     // Limpiar intervalos si es necesario
     try { this.mediator.unregister('Editor'); } catch (e) { /* noop */ }
@@ -116,9 +123,9 @@ export class DocumentosComponent implements OnInit, OnDestroy {
 
   // Input handler for the contenteditable editor
   onEditorInput() {
-    if (!this.editorRef) return;
-    // Use innerText so we keep plain text for markdown processing
-    this.content = this.editorRef.nativeElement.innerText || '';
+    if (!this.editorRef?.nativeElement) return;
+    // Usar innerHTML para preservar el formato de texto enriquecido
+    this.content = this.editorRef.nativeElement.innerHTML || '';
     this.updateDisplay();
 
     // Notify that current user is typing (throttled)
@@ -130,11 +137,11 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   }
 
   // Kept for compatibility if textarea remains elsewhere
-  onContentChange(event: Event) {
-    const value = (event.target as HTMLTextAreaElement).value;
-    this.content = value;
-    this.updateDisplay();
-  }
+  // onContentChange(event: Event) {
+  //   const value = (event.target as HTMLTextAreaElement).value;
+  //   this.content = value;
+  //   this.updateDisplay();
+  // }
 
   private updateDisplay() {
     // Renderizar según opciones
@@ -144,11 +151,11 @@ export class DocumentosComponent implements OnInit, OnDestroy {
       formatted = this.markdownToHtml(this.content);
     } else if (this.useTextFormat) {
       formatted = this.basicTextFormat(this.content);
-    } else {
-      formatted = this.escapeHtml(this.content).replace(/\n/g, '<br>');
     }
-
-    this.displayContent = formatted;
+    // Cuando se usa execCommand, el contenido ya es HTML, así que no se necesita re-renderizar
+    // a menos que se use una vista previa separada. Por ahora, el contenido es el display.
+    // this.displayContent = formatted;
+    this.displayContent = this.content;
 
     // Actualizar contador de palabras
     if (this.useWordCount) {
@@ -165,10 +172,11 @@ export class DocumentosComponent implements OnInit, OnDestroy {
 
   private updateWordCount() {
     const words = this.content.trim().length > 0 ? this.content.trim().split(/\s+/) : [];
-    this.wordCount = words.length;
+    this.wordCount = this.editorRef?.nativeElement.innerText.trim().split(/\s+/).filter(Boolean).length || 0;
   }
 
   private autoSave(content: string) {
+    if (!this.document) return; // Evita errores si el documento no está inicializado
     this.document.content = content;
     this.facade.saveDocument(this.document).subscribe(() => {
       try { this.collaboration.contentUpdated(this.document.id, content, this.document.name); } catch (e) { }
@@ -176,6 +184,7 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   }
 
   saveDocument() {
+    if (!this.document) return; // Guarda para prevenir errores si el documento no está listo
     this.document.content = this.content;
     this.facade.saveDocument(this.document).subscribe(() => {
       try { this.collaboration.contentUpdated(this.document.id, this.content, this.document.name); } catch (e) {}
@@ -233,10 +242,10 @@ export class DocumentosComponent implements OnInit, OnDestroy {
     try {
       document.execCommand(command as any, false);
       // Update content after formatting
-      if (this.editorRef) {
-        this.content = this.editorRef.nativeElement.innerText;
-        this.updateDisplay();
-      }
+      // if (this.editorRef) {
+      //   this.content = this.editorRef.nativeElement.innerText;
+      //   this.updateDisplay();
+      // }
     } catch (e) {
       console.warn('execCommand no soportado en este entorno', e);
     }

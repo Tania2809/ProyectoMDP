@@ -22,11 +22,14 @@ export class DocumentFacade {
 
   saveDocument(document: Document): Observable<Document | undefined> {
     // If the document has an id, update. Otherwise create.
-    if ((document as any).id) {
-      return this.api.update((document as any).id, document).pipe(
+    // Solución: Usar '_id' de MongoDB en lugar de 'id'.
+    const docId = (document as any)._id;
+
+    if (docId) {
+      return this.api.update(docId, document).pipe(
         map(d => {
           // notify collaborators if content changed (best-effort)
-          this.collaboration.contentUpdated((d as any).id, d.content || '', undefined);
+          this.collaboration.contentUpdated((d as any)._id, d.content || '', undefined);
           return d;
         }),
         catchError(() => of(undefined))
