@@ -3,69 +3,69 @@
     <app-notifications></app-notifications>
     <header class="editor-toolbar">
         <div class="doc-info">
-            <h2>{{ document.name }}</h2>
-            <span class="doc-type">{{ document.type }}</span>
+            <h2>{{ document?.name }}</h2>
+            <span class="doc-type">{{ document?.type }}</span>
         </div>
 
         <div class="toolbar-actions">
             <button (click)="toggleBold()" title="Negrita">
-                <i class="fa-solid fa-bold"></i>
+                <i class="fa-solid fa-bold"></i> Negrita
             </button>
             <button (click)="toggleItalic()" title="Cursiva">
-                <i class="fa-solid fa-italic"></i>
+                <i class="fa-solid fa-italic"></i> Cursiva
             </button>
             <button (click)="toggleUnderline()" title="Subrayado">
-                <i class="fa-solid fa-underline"></i>
+                <i class="fa-solid fa-underline"></i> Subrayado
             </button>
 
             <div class="divider"></div>
 
             <button (click)="setAlignment('left')" [class.active]="alignment === 'left'">
-                <i class="fa-solid fa-align-left"></i>
+                <i class="fa-solid fa-align-left"></i> Izquierda
             </button>
             <button (click)="setAlignment('center')" [class.active]="alignment === 'center'">
-                <i class="fa-solid fa-align-center"></i>
+                <i class="fa-solid fa-align-center"></i> Centro
             </button>
             <button (click)="setAlignment('right')" [class.active]="alignment === 'right'">
-                <i class="fa-solid fa-align-right"></i>
+                <i class="fa-solid fa-align-right"></i> Derecha
             </button>
 
             <div class="divider"></div>
 
             <button (click)="toggleWordCount()" [class.active]="useWordCount" title="Contador de palabras">
-                <i class="fa-solid fa-list-ol"></i>
+                <i class="fa-solid fa-list-ol"></i> Contador
             </button>
             <button (click)="toggleSyntaxHighlight()" [class.active]="useSyntaxHighlight" title="Resaltado Markdown">
-                <i class="fa-solid fa-code"></i>
+                <i class="fa-solid fa-code"></i> Markdown
             </button>
             <button (click)="openDetailView()" title="Abrir detalle">
-                <i class="fa-solid fa-external-link-alt"></i>
+                <i class="fa-solid fa-external-link-alt"></i> Detalle
             </button>
             <button (click)="toggleTextFormat()" [class.active]="useTextFormat" title="Formato de texto">
-                <i class="fa-solid fa-text-height"></i>
+                <i class="fa-solid fa-text-height"></i> Formato
             </button>
             <button (click)="toggleAutoSave()" [class.active]="useAutoSave" title="Guardado automático">
-                <i class="fa-solid fa-robot"></i>
+                <i class="fa-solid fa-robot"></i> Auto-guardado
             </button>
 
             <button (click)="saveDocument()" class="save-btn">
-                <i class="fa-solid fa-save"></i>
+                <i class="fa-solid fa-save"></i> Guardar
             </button>
         </div>
     </header>
 
     <main class="editor-body">
         <div class="editor-area">
-            <div #editor class="editable" contenteditable="true" (input)="onEditorInput()" [innerText]="content" dir="ltr" spellcheck="true" [attr.placeholder]="'Empieza a escribir aquí... Usa # para encabezados, ** para negrita, etc.'">
+            <div #editor class="editable" contenteditable="true" (input)="onEditorInput()" [innerHTML]="content | safeHtml" spellcheck="true" [attr.placeholder]="'Empieza a escribir aquí... Usa # para encabezados, ** para negrita, etc.'">
             </div>
         </div>
 
         <!-- Presencia integrada (usuarios + chat) -->
         <aside class="preview-area">
             <section class="embedded-presence">
-                <app-user-list></app-user-list>
-                <div class="spacer-8" aria-hidden="true"></div>
                 <app-chat></app-chat>
+                <div class="spacer-8" aria-hidden="true"></div>
+                <app-user-list></app-user-list>
             </section>
         </aside>
     </main>

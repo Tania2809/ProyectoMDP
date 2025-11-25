@@ -67,7 +67,7 @@ import { User } from '../../../models/usuario.model';
     .list-header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      padding: 14px 16px;
+      padding: 10px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -75,7 +75,7 @@ import { User } from '../../../models/usuario.model';
 
     .list-header h5 {
       margin: 0;
-      font-size: 16px;
+      font-size: 15px;
     }
 
     .badge {
@@ -87,14 +87,14 @@ import { User } from '../../../models/usuario.model';
     }
 
     .search-container {
-      padding: 12px;
+      padding: 8px 12px;
       background: white;
       border-bottom: 1px solid #e0e0e0;
     }
 
     .search-input {
       width: 100%;
-      padding: 8px 12px;
+      padding: 7px 10px;
       border: 1px solid #ddd;
       border-radius: 6px;
       font-size: 13px;
@@ -118,7 +118,7 @@ import { User } from '../../../models/usuario.model';
     .user-item {
       display: flex;
       align-items: center;
-      padding: 10px 12px;
+      padding: 8px 12px;
       border-bottom: 1px solid #eee;
       background: white;
       transition: background-color 0.2s;
@@ -148,16 +148,16 @@ import { User } from '../../../models/usuario.model';
     }
 
     .user-avatar {
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
       border-radius: 50%;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
       margin-right: 10px;
     }
@@ -172,7 +172,7 @@ import { User } from '../../../models/usuario.model';
     .user-name {
       font-weight: 600;
       color: #333;
-      font-size: 14px;
+      font-size: 13px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -245,7 +245,7 @@ import { User } from '../../../models/usuario.model';
 
     .list-footer {
       background: white;
-      padding: 10px 12px;
+      padding: 8px 12px;
       border-top: 1px solid #e0e0e0;
       font-size: 12px;
       color: #666;

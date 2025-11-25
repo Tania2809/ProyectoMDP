@@ -1,46 +1,53 @@
 <div class="dashboard-container">
-    <!-- PANEL LATERAL -->
-    <aside class="sidebar">
-        <h3>Tipos de documentos</h3>
-        <ul>
-            <li *ngFor="let type of documentTypes" (click)="selectType(type)" [class.active]="selectedType === type">
-                <i [ngClass]="{
-          'fa-solid fa-file-pdf': type === 'PDF',
-          'fa-solid fa-file-word': type === 'Word',
-          'fa-solid fa-file-excel': type === 'Excel'
-        }"></i> {{ type }}
-            </li>
-        </ul>
-    </aside>
-
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="main-content">
-        <h1>Panel de documentos</h1>
-
-        <!-- FORMULARIO -->
-        <div class="form-add">
-            <input type="text" placeholder="Nombre del documento" #docName>
+    <header class="dashboard-header">
+        <h1>Mi Dashboard de Documentos</h1>
+        <div class="add-document-form">
+            <input #docName type="text" placeholder="Nombre del nuevo documento" />
             <select #docType>
-        <option value="PDF">PDF</option>
-        <option value="Word">Word</option>
-        <option value="Excel">Excel</option>
+        <option *ngFor="let type of documentTypes" [value]="type">
+          {{ type }}
+        </option>
       </select>
-            <button (click)="addDocumentFromInput(docName, docType)">Agregar Documento</button>
+            <button (click)="addDocumentFromInput(docName, docType)">
+        Agregar Documento
+      </button>
         </div>
-
-        <!-- LISTA DE DOCUMENTOS -->
-        <div *ngIf="filteredDocuments.length > 0; else noSelection">
-            <h2>{{ selectedType }}</h2>
-            <div class="document-list">
-                <div class="document-item" *ngFor="let doc of filteredDocuments" (click)="selectDocument(doc)" [class.selected]="selectedDocument?.id === doc.id">
-                    {{ doc.name }}
-                </div>
-            </div>
+    </header>
+    <div class="dashboard-body">
+        <nav class="filter-nav-island">
+            <h3>Filtrar por:</h3>
+            <ul>
+                <li (click)="selectType(null)" [class.active]="selectedType === null">
+                    Todos
+                </li>
+                <li *ngFor="let type of documentTypes" (click)="selectType(type)" [class.active]="selectedType === type">
+                    {{ type }}
+                </li>
+            </ul>
+        </nav>
+        <div class="main-content">
+            <main class="document-list-container">
+                <h2>Mis Documentos</h2>
+                <ul class="document-list">
+                    <li *ngFor="let doc of filteredDocuments" [class.selected]="doc === selectedDocument">
+                        <div class="doc-info" (click)="selectDocument(doc)">
+                            <span class="doc-icon">📄</span>
+                            <span class="doc-name">{{ doc.title }}</span>
+                            <span class="doc-date">{{ doc.createdAt | date: "short" }}</span>
+                        </div>
+                        <div class="doc-actions">
+                            <button class="btn-edit" (click)="editDocument(doc); $event.stopImmediatePropagation()">Editar</button>
+                            <button class="btn-delete" (click)="deleteDocument(doc); $event.stopImmediatePropagation()">Eliminar</button>
+                        </div>
+                    </li>
+                    <li *ngIf="filteredDocuments.length === 0" class="no-documents">
+                        No se encontraron documentos.
+                    </li>
+                </ul>
+            </main>
+            <footer class="dashboard-footer">
+                <p>Tienes {{ filteredDocuments.length }} documentos.</p>
+            </footer>
         </div>
-
-        <!-- MENSAJE SI NO SE HA SELECCIONADO NADA -->
-        <ng-template #noSelection>
-            <p class="no-selection">Seleccione un tipo de documento en el panel izquierdo.</p>
-        </ng-template>
-    </main>
+    </div>
 </div>

@@ -222,7 +222,7 @@ export class CollaborationHubComponent implements OnInit {
   }
 
   resetData(): void {
-    this.mockData.resetMockData();
+    this.mockData.resetData();
     this.initializeCollaboration();
   }
 }

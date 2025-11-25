@@ -326,7 +326,7 @@ Todos los componentes utilizan:
 
 ## Requisitos
 
-- Angular 16+
+- Angular 19+
 - RxJS 7+
 - FormsModule para ngModel
 - CommonModule para directivas

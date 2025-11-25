@@ -1,191 +1,313 @@
 .dashboard-container {
-    display: flex;
     height: calc(100vh - 70px);
     /* Ajustamos el height si la navbar tiene otra altura */
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #121212;
-    color: #f5f5f5;
+    /* Se eliminó el tema oscuro y los estilos no utilizados.
+       Los nuevos estilos para el diseño de "isla" deben agregarse aquí. */
 }
 
 
-/* PANEL LATERAL */
+/* Estructura principal del cuerpo del dashboard */
 
-.sidebar {
-    width: 220px;
-    background-color: #181818;
-    padding: 1.5rem 1rem;
+.dashboard-body {
     display: flex;
-    flex-direction: column;
-    border-right: 1px solid #2e2e2e;
-    z-index: 10;
+    gap: 2rem;
+    /* Espacio entre la navegación y el contenido principal */
+    margin-top: 1rem;
 }
 
-.sidebar h3 {
+
+/* Contenedor para el contenido principal y el pie de página */
+
+.main-content {
+    flex-grow: 1;
+    /* Ocupa el espacio restante */
+}
+
+
+/* Estilos para la barra de navegación "isla" */
+
+.filter-nav-island {
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    width: 220px;
+    /* Ancho fijo para la navegación */
+    align-self: flex-start;
+    /* Se alinea al inicio del contenedor flex */
+}
+
+.filter-nav-island h3 {
+    margin-top: 0;
     margin-bottom: 1rem;
-    color: #ffffff;
     font-size: 1.1rem;
-    text-align: left;
-    font-weight: 600;
+    color: #333;
 }
 
-.sidebar ul {
+.filter-nav-island ul {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
-.sidebar li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0.7rem 1rem;
-    margin-bottom: 6px;
+.filter-nav-island li {
+    padding: 0.75rem 1rem;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
-    color: #ccc;
-}
-
-.sidebar li:hover {
-    background-color: #303030;
-    color: white;
-}
-
-.sidebar li.active {
-    background-color: #4a6cf7;
-    color: white;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+    margin-bottom: 0.5rem;
     font-weight: 500;
 }
 
+.filter-nav-island li:hover {
+    background-color: #f0f4f8;
+}
 
-/* Íconos (si se usan con <i> o lucide-react) */
-
-.sidebar i {
-    font-size: 1.2rem;
+.filter-nav-island li.active {
+    background-color: #007bff;
+    color: white;
+    font-weight: 600;
 }
 
 
-/* CONTENIDO PRINCIPAL */
+/* Ajustes menores para mantener la consistencia */
 
-.main-content {
-    flex: 1;
-    padding: 2rem 2.5rem;
-    overflow-y: auto;
-}
-
-.main-content h1 {
-    margin-bottom: 1.5rem;
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #ffffff;
+.dashboard-header {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 
-/* FORMULARIO */
+/* Estilos para el formulario de agregar documento */
 
-.form-add {
+.add-document-form {
     display: flex;
-    gap: 12px;
-    margin-bottom: 2rem;
+    gap: 0.75rem;
     align-items: center;
 }
 
-.form-add input,
-.form-add select {
-    padding: 10px;
+.add-document-form input[type="text"],
+.add-document-form select {
+    padding: 0.6rem 0.8rem;
     border-radius: 8px;
-    border: 1px solid #444;
-    background-color: #202020;
-    color: #f5f5f5;
-    min-width: 160px;
-    transition: border-color 0.2s;
+    border: 1px solid #d1d5db;
+    /* Gris claro */
+    background-color: #f9fafb;
+    /* Un fondo muy sutil */
+    font-size: 0.9rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.form-add input:focus,
-.form-add select:focus {
-    border-color: #4a6cf7;
+.add-document-form input[type="text"]:focus,
+.add-document-form select:focus {
     outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
-.form-add button {
-    padding: 10px 20px;
-    background-color: #4a6cf7;
+.add-document-form button {
+    padding: 0.6rem 1.2rem;
+    background-color: #007bff;
     color: white;
     border: none;
     border-radius: 8px;
     cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
     transition: background-color 0.2s ease;
 }
 
-.form-add button:hover {
-    background-color: #3656d4;
+.add-document-form button:hover {
+    background-color: #0056b3;
+}
+
+.document-list-container {
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 
-/* LISTA DE DOCUMENTOS */
+/* Estilos para la lista de documentos */
+
+.document-list-container h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
 
 .document-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
-.document-item {
-    background-color: #1e1e1e;
-    padding: 12px 16px;
-    border-radius: 8px;
+.document-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.document-list li:last-child {
+    border-bottom: none;
+}
+
+.document-list li:hover {
+    background-color: #f9fafb;
+}
+
+.document-list li.selected {
+    background-color: #eef2ff;
+    /* Un azul muy claro */
+    border-left: 4px solid #007bff;
+    padding-left: calc(1.25rem - 4px);
+}
+
+.doc-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
     cursor: pointer;
-    transition: all 0.2s ease;
+    flex-grow: 1;
 }
 
-.document-item:hover {
-    background-color: #2e2e2e;
+.doc-icon {
+    font-size: 1.5rem;
+    color: #888;
 }
 
-.document-item.selected {
-    background-color: #4a6cf7;
-    color: white;
+.doc-name {
+    font-weight: 500;
+    color: #333;
 }
 
-
-/* MENSAJE */
-
-.no-selection {
-    color: #aaa;
-    font-style: italic;
-    text-align: center;
-    margin-top: 40px;
+.doc-date {
+    color: #777;
+    font-size: 0.85rem;
+    margin-left: auto;
+    padding-right: 1.5rem;
 }
 
-
-/* PANEL DE COLABORADORES (DERECHA) */
-
-.collaborators-panel {
-    width: 280px;
-    border-left: 1px solid #2e2e2e;
+.doc-actions {
     display: flex;
-    flex-direction: column;
-    height: 100%;
+    gap: 0.5rem;
+}
+
+.action-button {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.action-button:hover {
+    background-color: #f0f4f8;
+    border-color: #adb5bd;
+}
+
+.no-documents {
+    text-align: center;
+    padding: 2rem;
+    color: #888;
+    background-color: #f9fafb;
+    border-radius: 8px;
 }
 
 
 /* RESPONSIVE */
 
 @media (max-width: 768px) {
-    .dashboard-container {
+    .dashboard-body {
         flex-direction: column;
     }
-    .sidebar {
-        position: relative;
+    .filter-nav-island {
         width: 100%;
-        height: auto;
-        flex-direction: row;
-        border-right: none;
-        border-bottom: 1px solid #333;
-        justify-content: space-around;
-        padding: 1rem;
+        align-self: auto;
     }
-    .collaborators-panel {
-        display: none;
-        /* Ocultamos el panel derecho en pantallas pequeñas */
+}
+
+
+/*
+==========================================
+TEMA OSCURO (Se activa con la preferencia del sistema)
+==========================================
+*/
+
+@media (prefers-color-scheme: dark) {
+    .dashboard-container {
+        background-color: #121212;
+        color: #f5f5f5;
+    }
+    .dashboard-header {
+        border-bottom-color: #2e2e2e;
+    }
+    .add-document-form input,
+    .add-document-form select {
+        background-color: #202020;
+        border: 1px solid #444;
+    }
+    .add-document-form input:focus,
+    .add-document-form select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+    .add-document-form button:hover {
+        background-color: #0069d9;
+        /* Un azul un poco más brillante para el hover en modo oscuro */
+    }
+    .filter-nav-island,
+    .document-list-container {
+        background-color: #1e1e1e;
+        box-shadow: none;
+        border: 1px solid #2e2e2e;
+    }
+    .filter-nav-island h3,
+    .document-list-container h2 {
+        color: #ffffff;
+    }
+    .filter-nav-island li {
+        color: #ccc;
+    }
+    .filter-nav-island li:hover {
+        background-color: #303030;
+        color: white;
+    }
+    .filter-nav-island li.active {
+        background-color: #007bff;
+        color: white;
+    }
+    .document-list li {
+        background-color: #2a2a2a;
+        border-bottom-color: #2e2e2e;
+    }
+    .document-list li:hover {
+        background-color: #252525;
+    }
+    .document-list li.selected {
+        background-color: #283245;
+        /* Azul oscuro sutil */
+        border-left-color: #007bff;
+    }
+    .doc-name {
+        color: #f5f5f5;
+    }
+    .doc-date {
+        color: #aaa;
+    }
+    .no-documents {
+        background-color: transparent;
+        color: #aaa;
+        border: 1px dashed #444;
     }
 }

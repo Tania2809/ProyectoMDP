@@ -1,7 +1,6 @@
 // Patrón: Facade — Orquesta llamadas al backend y al mediador para las vistas de documento.
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { Observable, of, catchError, map } from 'rxjs';
 import { Document } from './documentos.service';
 import { CollaborationMediator } from '../core/mediator/collaboration-mediator.service';
 import { DocumentApiService } from './document-api.service';
@@ -23,11 +22,14 @@ export class DocumentFacade {
 
   saveDocument(document: Document): Observable<Document | undefined> {
     // If the document has an id, update. Otherwise create.
-    if ((document as any).id) {
-      return this.api.update((document as any).id, document).pipe(
+    // Solución: Usar '_id' de MongoDB en lugar de 'id'.
+    const docId = (document as any)._id;
+
+    if (docId) {
+      return this.api.update(docId, document).pipe(
         map(d => {
           // notify collaborators if content changed (best-effort)
-          this.collaboration.contentUpdated((d as any).id, d.content || '', undefined);
+          this.collaboration.contentUpdated((d as any)._id, d.content || '', undefined);
           return d;
         }),
         catchError(() => of(undefined))
