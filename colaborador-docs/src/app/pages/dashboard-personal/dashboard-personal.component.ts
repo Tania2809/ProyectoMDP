@@ -86,7 +86,7 @@ export class DashboardPersonalComponent implements OnInit {
     const newTitle = prompt('Ingrese el nuevo nombre para el documento:', doc.title);
 
     if (newTitle && newTitle.trim() !== '' && newTitle.trim() !== doc.title) {
-      this.mockDataService.updateDocument(doc._id, newTitle.trim()).subscribe({
+      this.mockDataService.updateDocument(doc._id, newTitle.trim(), doc.content).subscribe({
         next: () => {
           this.loadDocuments(); // Recargamos la lista para ver el cambio
         },

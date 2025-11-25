@@ -23,8 +23,13 @@ interface Message {
   template: `
     <div class="chat-container">
       <div class="chat-header">
-        <h4>💬 Chat de Colaboración</h4>
-        <span class="user-count">{{users.length}} colaborador(es)</span>
+        <h4>💬 Chat </h4>
+        <div class="user-list-container">
+          <span class="user-count" (click)="showUsers = !showUsers">{{users.length}} colaborador(es)</span>
+          <div class="user-list" *ngIf="showUsers">
+            <div *ngFor="let u of users" class="user-list-item">{{u.name}} ({{u.status}})</div>
+          </div>
+        </div>
       </div>
       
       <div class="messages-container" #messagesDiv>
@@ -85,7 +90,7 @@ interface Message {
     .chat-header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      padding: 16px;
+      padding: 12px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -97,10 +102,38 @@ interface Message {
     }
 
     .user-count {
-      background: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.2);
       padding: 4px 12px;
       border-radius: 20px;
       font-size: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .user-count:hover {
+      background: rgba(255,255,255,0.4);
+    }
+
+    .user-list-container {
+      position: relative;
+    }
+
+    .user-list {
+      position: absolute;
+      top: calc(100% + 5px);
+      right: 0;
+      background-color: white;
+      color: #333;
+      border-radius: 6px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      padding: 8px;
+      z-index: 10;
+      width: 180px;
+    }
+
+    .user-list-item {
+      padding: 6px 8px;
+      font-size: 13px;
     }
 
     .messages-container {
@@ -111,7 +144,6 @@ interface Message {
       flex-direction: column;
       gap: 8px;
     }
-
     .no-messages {
       display: flex;
       align-items: center;
@@ -312,6 +344,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   draftUser = '';
   draftMessage = '';
   newUserName = '';
+  showUsers = false;
   private messageId = 0;
   private subscriptions: Subscription[] = [];
   private shouldScroll = true;
@@ -444,7 +477,15 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.sessions.addUser(u);
     }
     
-    this.sendMessage(this.draftUser, this.draftMessage);
+    const messageData = {
+      user: this.draftUser,
+      message: this.draftMessage,
+      userId: existing?.id || 0
+    };
+
+    this.onMediatorEvent('self', 'messageSent', messageData);
+    this.collaboration.sendMessage(messageData.user, messageData.message);
+
     this.draftMessage = '';
   }
 }

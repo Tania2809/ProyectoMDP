@@ -19,6 +19,9 @@ export interface Document {
   providedIn: 'root'
 })
 export class MockDataService {
+  resetData() {
+    throw new Error('Method not implemented.');
+  }
   // URL base de nuestra API de backend
   private apiUrl = 'http://localhost:3000/api';
 

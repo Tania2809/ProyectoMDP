@@ -97,15 +97,19 @@
             .editor-body {
                 display: flex;
                 gap: 1.25rem;
-                padding: 1.5rem;
+                padding: 1rem;
+                /* Reducido para dar más espacio al documento */
                 flex: 1;
+                overflow: hidden;
+                /* Previene que el body principal se desborde */
             }
             
             .preview-panel {
                 padding: 0.5rem;
             }
+            /* Se ha eliminado la clase duplicada .preview-content */
             
-            .preview-content {
+            .preview-content-specific {
                 background: #fafafa;
                 border: 1px solid #eee;
                 padding: 0.75rem;
@@ -115,6 +119,8 @@
             .editor-area {
                 flex: 1;
                 display: flex;
+                overflow: auto;
+                /* Añadido para que el scroll aparezca aquí */
                 justify-content: center;
             }
             
@@ -130,7 +136,11 @@
                 line-height: 1.7;
                 color: $text;
                 white-space: pre-wrap;
-                overflow: auto;
+                direction: ltr;
+                /* Asegura que la escritura sea de izquierda a derecha */
+                text-align: left;
+                /* Asegura que el texto se alinee a la izquierda por defecto */
+                /* pre-wrap preserva los espacios y saltos de línea, ideal para un editor */
                 font-family: 'Roboto', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial;
             }
             
@@ -300,266 +310,6 @@
             
             .spacer-8 {
                 height: 8px;
-            }
-            /* Editor estilo tipo Google Docs/WPS */
-            
-            .editor-container {
-                display: flex;
-                /* Editor — paleta afinada, tamaños y tipografías */
-                $primary: #2563eb; // azul principal (similar a Google)
-                $muted: #f4f6f8;
-                $panel: #ffffff;
-                $surface: #fbfdff;
-                $text: #1f2937; // gris oscuro
-                $mutedText: #6b7280;
-                * {
-                    box-sizing: border-box;
-                }
-                .editor-container {
-                    display: flex;
-                    flex-direction: column;
-                    height: 100vh;
-                    background: $muted;
-                    font-family: 'Segoe UI', Roboto, system-ui, -apple-system, 'Helvetica Neue', Arial;
-                    color: $text;
-                }
-                .editor-toolbar {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    background: $panel;
-                    padding: 0.75rem 1.25rem;
-                    border-bottom: 1px solid rgba(31, 41, 55, 0.06);
-                    box-shadow: 0 2px 6px rgba(31, 41, 55, 0.03);
-                }
-                .doc-info {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.75rem;
-                    h2 {
-                        font-size: 1.125rem;
-                        margin: 0;
-                        font-weight: 600;
-                    }
-                    .doc-type {
-                        background: $primary;
-                        color: white;
-                        padding: 4px 10px;
-                        border-radius: 999px;
-                        font-size: 0.75rem;
-                        font-weight: 600;
-                    }
-                }
-                .toolbar-actions {
-                    display: flex;
-                    gap: 0.5rem;
-                    align-items: center;
-                }
-                .toolbar-actions button {
-                    background: $panel;
-                    border: 1px solid rgba(31, 41, 55, 0.06);
-                    border-radius: 6px;
-                    padding: 8px 10px;
-                    cursor: pointer;
-                    transition: all 0.12s ease;
-                    color: $mutedText;
-                    font-size: 0.95rem;
-                }
-                .toolbar-actions button:hover {
-                    transform: translateY(-2px);
-                    background: lighten($panel, 2%);
-                }
-                .toolbar-actions button.active {
-                    background: $primary;
-                    color: white;
-                    border-color: darken($primary, 6%);
-                    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.15);
-                }
-                .toolbar-actions .divider {
-                    width: 1px;
-                    height: 28px;
-                    background: rgba(31, 41, 55, 0.06);
-                    margin: 0 6px;
-                }
-                .toolbar-actions .save-btn {
-                    background: $primary;
-                    color: white;
-                    padding: 8px 12px;
-                    border-radius: 8px;
-                    font-weight: 600;
-                }
-                .editor-body {
-                    display: flex;
-                    gap: 1.25rem;
-                    padding: 1.5rem;
-                    flex: 1;
-                }
-                .editor-area {
-                    flex: 1;
-                    display: flex;
-                    justify-content: center;
-                }
-                /* Documento centrado como página */
-                .editor-area .editable {
-                    width: min(900px, 90%);
-                    min-height: 540px;
-                    background: $panel;
-                    padding: 44px 56px;
-                    border-radius: 8px;
-                    box-shadow: 0 6px 18px rgba(31, 41, 55, 0.06);
-                    outline: none;
-                    font-size: 16px;
-                    line-height: 1.7;
-                    color: $text;
-                    white-space: pre-wrap;
-                    overflow: auto;
-                    font-family: 'Roboto', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial;
-                }
-                .editable:empty:before {
-                    content: attr(placeholder);
-                    color: #9aa0a6;
-                    font-style: italic;
-                }
-                .preview-area {
-                    width: 320px;
-                    background: $panel;
-                    border: 1px solid rgba(31, 41, 55, 0.06);
-                    border-radius: 8px;
-                    padding: 1rem;
-                }
-                .preview-area h4 {
-                    margin: 0 0 0.75rem 0;
-                    color: $mutedText;
-                    font-size: 0.85rem;
-                    text-transform: uppercase;
-                }
-                .preview-content {
-                    max-height: 520px;
-                    overflow: auto;
-                    font-family: 'Segoe UI', system-ui;
-                    color: $text;
-                }
-                /* Markdown / content styles */
-                .preview-content .md-header,
-                .preview-content h1,
-                .preview-content h2,
-                .preview-content h3 {
-                    color: $primary;
-                    font-weight: 700;
-                    margin: 1.25rem 0 0.5rem 0;
-                }
-                .preview-content h1 {
-                    font-size: 1.6rem;
-                }
-                .preview-content h2 {
-                    font-size: 1.25rem;
-                }
-                .preview-content h3 {
-                    font-size: 1.05rem;
-                }
-                .preview-content .md-paragraph,
-                .preview-content p {
-                    margin: 0.9rem 0;
-                    color: $text;
-                    line-height: 1.7;
-                }
-                .preview-content .md-hr,
-                .preview-content hr {
-                    border: none;
-                    border-top: 1px solid rgba(31, 41, 55, 0.06);
-                    margin: 1.25rem 0;
-                }
-                .preview-content .md-bold,
-                .preview-content strong {
-                    color: #b91c1c;
-                    font-weight: 700;
-                }
-                .preview-content code,
-                .preview-content .md-inline-code {
-                    background: #f3f4f6;
-                    padding: 2px 6px;
-                    border-radius: 6px;
-                    font-family: 'Consolas', monospace;
-                    color: #b91c1c;
-                    border: 1px solid rgba(31, 41, 55, 0.04);
-                }
-                .editor-footer {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 0.75rem 1.25rem;
-                    background: transparent;
-                    color: $mutedText;
-                }
-                .footer-left {
-                    max-width: 65%;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                }
-                .footer-right {
-                    display: flex;
-                    gap: 1rem;
-                    align-items: center;
-                }
-                .auto-save-indicator {
-                    color: #0f9d58;
-                    font-weight: 600;
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                }
-                .auto-save-indicator::before {
-                    content: '';
-                    width: 8px;
-                    height: 8px;
-                    background: #0f9d58;
-                    border-radius: 50%;
-                    display: inline-block;
-                    animation: pulse 2s infinite;
-                }
-                @keyframes pulse {
-                    0%,
-                    100% {
-                        opacity: 1;
-                        transform: scale(1);
-                    }
-                    50% {
-                        opacity: 0.5;
-                        transform: scale(0.85);
-                    }
-                }
-                // Responsive
-                @media (max-width: 968px) {
-                    .editor-body {
-                        flex-direction: column;
-                        gap: 1rem;
-                        padding: 1rem;
-                    }
-                    .editor-area .editable {
-                        width: 95%;
-                        min-height: 360px;
-                        padding: 28px;
-                    }
-                    .preview-area {
-                        width: 100%;
-                    }
-                }
-                @media (max-width: 768px) {
-                    .editor-toolbar {
-                        flex-direction: column;
-                        gap: 0.75rem;
-                        padding: 1rem;
-                    }
-                    .toolbar-actions {
-                        justify-content: center;
-                    }
-                    .editor-footer {
-                        flex-direction: column;
-                        gap: 0.5rem;
-                        text-align: center;
-                    }
-                }
             }
             /* Modal overlay para mostrar detalle sin navegar */
             

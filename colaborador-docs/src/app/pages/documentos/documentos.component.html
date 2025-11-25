@@ -55,14 +55,17 @@
     </header>
 
     <main class="editor-body">
-        <div #editor class="editable" contenteditable="true" (input)="onEditorInput()" dir="ltr" spellcheck="true" [innerHTML]="content | safeHtml" placeholder="Empieza a escribir aquí..."></div>
+        <div class="editor-area">
+            <div #editor class="editable" contenteditable="true" (input)="onEditorInput()" [innerHTML]="content | safeHtml" spellcheck="true" [attr.placeholder]="'Empieza a escribir aquí... Usa # para encabezados, ** para negrita, etc.'">
+            </div>
+        </div>
 
         <!-- Presencia integrada (usuarios + chat) -->
         <aside class="preview-area">
             <section class="embedded-presence">
-                <app-user-list></app-user-list>
-                <div class="spacer-8" aria-hidden="true"></div>
                 <app-chat></app-chat>
+                <div class="spacer-8" aria-hidden="true"></div>
+                <app-user-list></app-user-list>
             </section>
         </aside>
     </main>

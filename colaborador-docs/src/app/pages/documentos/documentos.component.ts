@@ -1,7 +1,8 @@
 // Patrón: Mediator (vista principal) — Usa Mediator para coordinar eventos entre editor, chat y notificaciones; también integra Observer (UserSessionManager) y Facade (DocumentFacade).
 import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
+import { CommonModule, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Document, RenderedContent } from '../../services/documentos.service';
 import { MediatorService } from '../../core/mediator/mediator.service';
@@ -14,11 +15,14 @@ import { CollaborationMediator } from '../../core/mediator/collaboration-mediato
 import { DocumentFacade } from '../../services/document-facade.service';
 import { UserSessionManager } from '../../core/mediator/user-session.manager';
 import { User } from '../../models/usuario.model';
+import { Template } from '../../services/dao/template-dao.model';
+import { LocalStorageTemplateDAO } from '../../services/dao/local-storage-template.dao';
+import { SafeHtmlPipe } from './safe-html.pipe';
 
 @Component({
   selector: 'app-documento',
   standalone: true,
-  imports: [CommonModule, FormsModule, ChatComponent, UserListComponent, NotificationComponent, DocumentoDetalleComponent],
+  imports: [CommonModule, FormsModule, ChatComponent, UserListComponent, NotificationComponent, DocumentoDetalleComponent, SafeHtmlPipe, AsyncPipe],
   templateUrl: './documentos.component.html',
   styleUrls: ['./documentos.component.scss']
 })
@@ -57,6 +61,8 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   // Modal state para mostrar detalle en overlay
   modalOpen: boolean = false;
   modalDocument?: Document;
+  // DAO Pattern for templates
+  templates: Promise<Template[]> = Promise.resolve([]);
 
   constructor(
     private mediator: MediatorService,
@@ -64,6 +70,8 @@ export class DocumentosComponent implements OnInit, OnDestroy {
     private collaboration: CollaborationMediator,
     private sessions: UserSessionManager,
     private facade: DocumentFacade,
+    // Inyectamos el DAO directamente. En una app más grande, podría ir tras una Facade.
+    private templateDAO: LocalStorageTemplateDAO,
     private router: Router
   ) {}
 
@@ -104,6 +112,9 @@ export class DocumentosComponent implements OnInit, OnDestroy {
         this.showEditingIndicator(ev.user.name, this.pickColor(ev.user.id));
       }
     });
+
+    // Cargar plantillas usando el DAO
+    this.loadTemplates();
   }
 
   private initializeDocument(doc: Document) {
@@ -124,8 +135,8 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   // Input handler for the contenteditable editor
   onEditorInput() {
     if (!this.editorRef?.nativeElement) return;
-    // Usar innerHTML para preservar el formato de texto enriquecido
-    this.content = this.editorRef.nativeElement.innerHTML || '';
+    // Usar innerHTML para preservar el formato de texto enriquecido (negrita, etc.)
+    this.content = this.editorRef.nativeElement.innerHTML;
     this.updateDisplay();
 
     // Notify that current user is typing (throttled)
@@ -144,17 +155,8 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   // }
 
   private updateDisplay() {
-    // Renderizar según opciones
-    let formatted = this.content;
-
-    if (this.useSyntaxHighlight) {
-      formatted = this.markdownToHtml(this.content);
-    } else if (this.useTextFormat) {
-      formatted = this.basicTextFormat(this.content);
-    }
-    // Cuando se usa execCommand, el contenido ya es HTML, así que no se necesita re-renderizar
-    // a menos que se use una vista previa separada. Por ahora, el contenido es el display.
-    // this.displayContent = formatted;
+    // El contenido ya es HTML gracias a contenteditable, no se necesita procesamiento adicional.
+    // Simplemente actualizamos los contadores y programamos el autoguardado.
     this.displayContent = this.content;
 
     // Actualizar contador de palabras
@@ -305,45 +307,6 @@ export class DocumentosComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Simple markdown -> HTML renderer (subset)
-  private markdownToHtml(md: string): string {
-    if (!md) return '';
-    let formatted = this.escapeHtml(md);
-
-    // Headers
-    formatted = formatted.replace(/^### (.*$)/gim, '<h3 class="md-header">$1</h3>');
-    formatted = formatted.replace(/^## (.*$)/gim, '<h2 class="md-header">$1</h2>');
-    formatted = formatted.replace(/^# (.*$)/gim, '<h1 class="md-header">$1</h1>');
-
-    // Horizontal rules
-    formatted = formatted.replace(/^---$/gim, '<hr class="md-hr">');
-
-    // Bold
-    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong class="md-bold">$1</strong>');
-
-    // Inline code
-    formatted = formatted.replace(/`(.*?)`/g, '<code class="md-inline-code">$1</code>');
-
-    // Paragraphs
-    formatted = formatted.split('\n').map(line => {
-      if (!line.trim() || line.startsWith('<h1') || line.startsWith('<h2') || line.startsWith('<h3') || line.startsWith('<hr') || line.startsWith('<ul') || line.startsWith('<li')) {
-        return line;
-      }
-      return `<p class="md-paragraph">${line}</p>`;
-    }).join('\n');
-
-    return formatted;
-  }
-
-  private basicTextFormat(text: string): string {
-    if (!text) return '';
-    return this.escapeHtml(text).split('\n').map(line => line.trim() ? `<p>${line}</p>` : '').join('\n');
-  }
-
-  private escapeHtml(raw: string): string {
-    return raw.replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"} as any)[c]);
-  }
-
   // Show a small editing indicator when another user is editing
   private showEditingIndicator(name: string, color: string, duration = 3000) {
     this.editingBy = { name, color, expiresAt: Date.now() + duration };
@@ -363,4 +326,29 @@ export class DocumentosComponent implements OnInit, OnDestroy {
     s = Math.abs(s);
     return palette[s % palette.length];
   }
+
+  // --- Funcionalidad de Plantillas con Patrón DAO ---
+
+  private loadTemplates() {
+    this.templates = this.templateDAO.getAll();
+  }
+
+  async applyTemplate(templateId: string) {
+    const template = await this.templateDAO.getById(templateId);
+    if (template && this.editorRef?.nativeElement) {
+      this.editorRef.nativeElement.innerHTML = template.content;
+      this.onEditorInput(); // Actualizar estado del componente
+      this.notifications.show(`Plantilla "${template.name}" aplicada.`);
+    }
+  }
+
+  async saveAsTemplate() {
+    const name = prompt('Ingresa un nombre para la plantilla:', 'Mi Plantilla');
+    if (name && this.content.trim()) {
+      await this.templateDAO.save({ name, content: this.content });
+      this.notifications.show(`Plantilla "${name}" guardada localmente.`);
+      this.loadTemplates(); // Recargar la lista de plantillas
+    }
+  }
+
 }
