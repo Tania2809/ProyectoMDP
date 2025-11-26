@@ -18,7 +18,8 @@ mongoose.connect(MONGO_URI)
 
 // 5. Middlewares
 app.use(cors());
-app.use(express.json());
+// Aumentamos el límite del payload a 10mb para aceptar contenido más grande de los editores
+app.use(express.json({ limit: '10mb' }));
 
 // 6. Definir el Schema y Modelo de Mongoose
 const documentSchema = new mongoose.Schema({

@@ -39,7 +39,6 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   // Características disponibles
   useWordCount: boolean = true;
   useSyntaxHighlight: boolean = true;
-  useAutoSave: boolean = true;
   useTextFormat: boolean = true;
 
   // Estado de los botones de formato
@@ -49,7 +48,6 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   alignment: 'left' | 'center' | 'right' = 'left';
 
   // editor field removed; logic is implemented directly in the component
-  private autoSaveTimer: any = null;
 
   // Editing indicator state
   editingBy?: { name: string; color: string; expiresAt: number };
@@ -120,8 +118,9 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   private initializeDocument(doc: Document) {
     this.document = doc;
     this.content = this.document.content || '';
-    // Delay update until view is ready; small timeout is acceptable here
-    setTimeout(() => this.updateDisplay(), 0);
+    // Establecer el contenido inicial y actualizar el estado una vez.
+    // Usamos setTimeout para asegurarnos de que el editorRef esté disponible.
+    setTimeout(() => this.updateEditorState(true), 0);
   }
 
   ngOnDestroy() {
@@ -136,53 +135,34 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   onEditorInput() {
     if (!this.editorRef?.nativeElement) return;
     // Usar innerHTML para preservar el formato de texto enriquecido (negrita, etc.)
-    this.content = this.editorRef.nativeElement.innerHTML;
-    this.updateDisplay();
+    // Solo actualizamos el modelo y los contadores, sin volver a renderizar el [innerHTML].
+    this.updateEditorState(false);
 
-    // Notify that current user is typing (throttled)
+    // --- SOLUCIÓN: Enviar evento 'typing' de forma controlada ---
+    // Solo envía el evento si han pasado más de 3 segundos desde la última vez.
     const now = Date.now();
-    if (this.currentUser && (now - this.lastTypingSent) > 1500) {
-      try { this.sessions.notifyTyping(this.currentUser.id); } catch (e) { }
+    if (this.currentUser && now - this.lastTypingSent > 7000) {
+      this.sessions.sendEvent({ type: 'typing', user: this.currentUser });
       this.lastTypingSent = now;
     }
   }
 
-  // Kept for compatibility if textarea remains elsewhere
-  // onContentChange(event: Event) {
-  //   const value = (event.target as HTMLTextAreaElement).value;
-  //   this.content = value;
-  //   this.updateDisplay();
-  // }
-
-  private updateDisplay() {
-    // El contenido ya es HTML gracias a contenteditable, no se necesita procesamiento adicional.
-    // Simplemente actualizamos los contadores y programamos el autoguardado.
-    this.displayContent = this.content;
-
+  /**
+   * Actualiza el estado del componente basado en el contenido del editor.
+   * @param setDisplayContent Si es true, actualiza el displayContent para el renderizado inicial.
+   */
+  private updateEditorState(setDisplayContent: boolean) {
+    this.content = this.editorRef.nativeElement.innerHTML;
+    if (setDisplayContent) {
+      this.displayContent = this.content;
+    }
     // Actualizar contador de palabras
-    if (this.useWordCount) {
-      this.updateWordCount();
-    } else {
-      this.wordCount = 0;
-    }
-
-    // Trigger autosave
-    if (this.useAutoSave) {
-      this.scheduleAutoSave();
-    }
+    this.updateWordCount();
   }
 
   private updateWordCount() {
     const words = this.content.trim().length > 0 ? this.content.trim().split(/\s+/) : [];
     this.wordCount = this.editorRef?.nativeElement.innerText.trim().split(/\s+/).filter(Boolean).length || 0;
-  }
-
-  private autoSave(content: string) {
-    if (!this.document) return; // Evita errores si el documento no está inicializado
-    this.document.content = content;
-    this.facade.saveDocument(this.document).subscribe(() => {
-      try { this.collaboration.contentUpdated(this.document.id, content, this.document.name); } catch (e) { }
-    });
   }
 
   saveDocument() {
@@ -211,8 +191,7 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   onModalSaved(saved: Document) {
     // Actualizar el documento local y la vista
     this.document = saved;
-    this.content = saved.content || '';
-    this.updateDisplay();
+    this.initializeDocument(saved); // Re-inicializar con el nuevo contenido
     try { this.collaboration.contentUpdated(this.document.id, this.content, this.document.name); } catch (e) {}
     this.notifications.show(`Documento "${this.document.name}" guardado correctamente.`);
     this.closeModal();
@@ -243,11 +222,8 @@ export class DocumentosComponent implements OnInit, OnDestroy {
     }
     try {
       document.execCommand(command as any, false);
-      // Update content after formatting
-      // if (this.editorRef) {
-      //   this.content = this.editorRef.nativeElement.innerText;
-      //   this.updateDisplay();
-      // }
+      // Forzar la actualización del contenido después de aplicar el formato.
+      this.onEditorInput();
     } catch (e) {
       console.warn('execCommand no soportado en este entorno', e);
     }
@@ -256,35 +232,17 @@ export class DocumentosComponent implements OnInit, OnDestroy {
   // Toggle de características
   toggleWordCount() {
     this.useWordCount = !this.useWordCount;
-    this.updateDisplay();
+    this.updateWordCount(); // Solo actualiza el contador, no toda la vista
   }
 
   toggleSyntaxHighlight() {
     this.useSyntaxHighlight = !this.useSyntaxHighlight;
-    this.updateDisplay();
+    // No es necesario hacer nada aquí si no se vuelve a renderizar
   }
 
   toggleTextFormat() {
     this.useTextFormat = !this.useTextFormat;
-    this.updateDisplay();
-  }
-
-  toggleAutoSave() {
-    this.useAutoSave = !this.useAutoSave;
-    if (!this.useAutoSave && this.autoSaveTimer) {
-      clearTimeout(this.autoSaveTimer);
-      this.autoSaveTimer = null;
-    }
-    this.updateDisplay();
-  }
-
-  private scheduleAutoSave() {
-    if (this.autoSaveTimer) {
-      clearTimeout(this.autoSaveTimer);
-    }
-    this.autoSaveTimer = setTimeout(() => {
-      this.autoSave(this.content);
-    }, 1500);
+    // No es necesario hacer nada aquí si no se vuelve a renderizar
   }
 
   // Handler called by MediatorService

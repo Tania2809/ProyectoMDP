@@ -7,6 +7,9 @@ export type UserEvent = { type: 'joined' | 'left' | 'status' | 'typing', user: U
 
 @Injectable({ providedIn: 'root' })
 export class UserSessionManager {
+  sendEvent(arg0: { type: string; user: User; }) {
+    throw new Error('Method not implemented.');
+  }
   // current list of users
   private usersSubject = new BehaviorSubject<User[]>([]);
   // stream of user events (joins, leaves, status changes)

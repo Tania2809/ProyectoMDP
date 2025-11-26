@@ -44,9 +44,6 @@
             <button (click)="toggleTextFormat()" [class.active]="useTextFormat" title="Formato de texto">
                 <i class="fa-solid fa-text-height"></i> Formato
             </button>
-            <button (click)="toggleAutoSave()" [class.active]="useAutoSave" title="Guardado automático">
-                <i class="fa-solid fa-robot"></i> Auto-guardado
-            </button>
 
             <button (click)="saveDocument()" class="save-btn">
                 <i class="fa-solid fa-save"></i> Guardar
@@ -55,8 +52,8 @@
     </header>
 
     <main class="editor-body">
-        <div class="editor-area">
-            <div #editor class="editable" contenteditable="true" (input)="onEditorInput()" [innerHTML]="content | safeHtml" spellcheck="true" [attr.placeholder]="'Empieza a escribir aquí... Usa # para encabezados, ** para negrita, etc.'">
+        <div class="editor-page-container">
+            <div #editor class="editor-page" contenteditable="true" dir="ltr" (input)="onEditorInput()" [innerHTML]="displayContent | safeHtml">
             </div>
         </div>
 
@@ -76,12 +73,10 @@
                 <span *ngIf="useWordCount">Contador</span>
             <span *ngIf="useSyntaxHighlight">, Markdown</span>
             <span *ngIf="useTextFormat">, Formato</span>
-            <span *ngIf="useAutoSave">, Auto-guardado</span>
             </span>
         </div>
         <div class="footer-right">
             <span>Palabras: {{ wordCount }}</span>
-            <span *ngIf="useAutoSave" class="auto-save-indicator">💾</span>
         </div>
     </footer>
 </div>
