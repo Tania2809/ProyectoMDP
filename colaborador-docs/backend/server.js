@@ -1,6 +1,7 @@
 // 1. Cargar variables de entorno
 require('dotenv').config();
 
+
 // 2. Importar dependencias
 const express = require('express');
 const mongoose = require('mongoose');
